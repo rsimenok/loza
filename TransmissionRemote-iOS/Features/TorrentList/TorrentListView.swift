@@ -11,6 +11,7 @@ import SwiftUI
 @MainActor
 struct TorrentListView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(AppEnvironment.self) private var environment: AppEnvironment?
 
     @Bindable var viewModel: TorrentListViewModel
@@ -92,6 +93,11 @@ struct TorrentListView: View {
                     }
                 }
             }
+            .navigationDestination(for: Int.self) { torrentId in
+                if let torrent = viewModel.torrents.first(where: { $0.id == torrentId }) {
+                    TorrentDetailView(torrent: torrent, client: viewModel.client)
+                }
+            }
             .onAppear {
                 if let environment {
                     viewModel.environment = environment
@@ -138,7 +144,7 @@ struct TorrentListView: View {
     }
 
     private var torrentList: some View {
-        let baseList = List(selection: $selectedTorrentId) {
+        let baseList = List {
             if let error = viewModel.errorMessage {
                 errorBanner(message: error)
                     .listRowInsets(EdgeInsets())
@@ -165,29 +171,15 @@ struct TorrentListView: View {
                     .listRowBackground(Color.clear)
             } else {
                 ForEach(viewModel.filteredTorrents) { torrent in
-                    ZStack {
-                        NavigationLink(value: torrent.id) {
-                            EmptyView()
-                        }
-                        .opacity(0)
-
-                        TorrentRowView(
-                            torrent: torrent,
-                            isSelected: selectedTorrentId == torrent.id
+                    torrentRowItem(for: torrent)
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .confirmationDialog(
+                            "Delete Torrent?",
+                            isPresented: deleteConfirmationBinding(for: torrent),
+                            titleVisibility: .visible
                         ) {
-                            Task {
-                                await viewModel.toggleTorrentState(torrent: torrent)
-                            }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .confirmationDialog(
-                        "Delete Torrent?",
-                        isPresented: deleteConfirmationBinding(for: torrent),
-                        titleVisibility: .visible
-                    ) {
                             Button("Delete Torrent Only", role: .destructive) {
                                 HapticManager.shared.torrentDeleted()
                                 if selectedTorrentId == torrent.id {
@@ -270,6 +262,35 @@ struct TorrentListView: View {
             text: $viewModel.searchQuery,
             prompt: "Search Torrents..."
         )
+    }
+
+    @ViewBuilder
+    private func torrentRowItem(for torrent: Torrent) -> some View {
+        if horizontalSizeClass == .compact {
+            NavigationLink(value: torrent.id) {
+                TorrentRowView(
+                    torrent: torrent,
+                    isSelected: false
+                ) {
+                    Task {
+                        await viewModel.toggleTorrentState(torrent: torrent)
+                    }
+                }
+            }
+        } else {
+            TorrentRowView(
+                torrent: torrent,
+                isSelected: selectedTorrentId == torrent.id
+            ) {
+                Task {
+                    await viewModel.toggleTorrentState(torrent: torrent)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                selectedTorrentId = torrent.id
+            }
+        }
     }
 
     @ViewBuilder
