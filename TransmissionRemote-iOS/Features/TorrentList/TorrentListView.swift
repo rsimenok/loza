@@ -264,9 +264,26 @@ struct TorrentListView: View {
         )
     }
 
+    private var isPadOrMac: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac
+    }
+
     @ViewBuilder
     private func torrentRowItem(for torrent: Torrent) -> some View {
-        if horizontalSizeClass == .compact {
+        if isPadOrMac {
+            TorrentRowView(
+                torrent: torrent,
+                isSelected: selectedTorrentId == torrent.id
+            ) {
+                Task {
+                    await viewModel.toggleTorrentState(torrent: torrent)
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .onTapGesture {
+                selectedTorrentId = torrent.id
+            }
+        } else {
             NavigationLink(value: torrent.id) {
                 TorrentRowView(
                     torrent: torrent,
@@ -276,19 +293,6 @@ struct TorrentListView: View {
                         await viewModel.toggleTorrentState(torrent: torrent)
                     }
                 }
-            }
-        } else {
-            TorrentRowView(
-                torrent: torrent,
-                isSelected: selectedTorrentId == torrent.id
-            ) {
-                Task {
-                    await viewModel.toggleTorrentState(torrent: torrent)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                selectedTorrentId = torrent.id
             }
         }
     }
