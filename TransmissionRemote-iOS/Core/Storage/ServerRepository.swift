@@ -102,9 +102,7 @@ public final class ServerRepository: ServerRepositoryProtocol, Sendable {
             servers.append(server)
         }
 
-        if let password = password {
-            try keychainService.save(password: password, forServerId: server.id)
-        }
+        try setPassword(password, for: server.id)
 
         saveToStorage()
     }

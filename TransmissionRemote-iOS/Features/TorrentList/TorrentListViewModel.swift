@@ -130,11 +130,9 @@ public final class TorrentListViewModel {
 
     /// Refreshes torrents and session stats.
     public func refresh() async {
-        if torrents.isEmpty {
-            isLoading = true
-        }
+        isLoading = true
+        defer { isLoading = false }
         await pollOnce()
-        isLoading = false
     }
 
     /// Fetches the latest torrents and session statistics in parallel.

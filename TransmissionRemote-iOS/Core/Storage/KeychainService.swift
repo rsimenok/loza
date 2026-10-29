@@ -37,7 +37,7 @@ public final class KeychainService: KeychainServiceProtocol, Sendable {
 
     private let service: String
 
-    public init(service: String = "com.smnk.TransmissionRemote-iOS") {
+    public init(service: String = "com.smnk.transmission-remote-ios") {
         self.service = service
     }
 

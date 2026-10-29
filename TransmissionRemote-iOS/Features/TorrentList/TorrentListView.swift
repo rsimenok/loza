@@ -8,17 +8,28 @@
 import SwiftUI
 
 /// Main screen showing the list of torrents, filter bar, aggregate speeds, and server switcher.
-public struct TorrentListView: View {
+@MainActor
+struct TorrentListView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(AppEnvironment.self) private var environment: AppEnvironment?
 
-    @State private var viewModel: TorrentListViewModel
+    @Bindable var viewModel: TorrentListViewModel
+    @Binding var selectedTorrentId: Int?
     @State private var isPresentingServerList: Bool = false
     @State private var isPresentingAddTorrent: Bool = false
     @State private var filterBarHeight: CGFloat = 46
 
-    public init(viewModel: TorrentListViewModel? = nil) {
-        self._viewModel = State(wrappedValue: viewModel ?? TorrentListViewModel())
+    init(
+        viewModel: TorrentListViewModel,
+        selectedTorrentId: Binding<Int?> = .constant(nil)
+    ) {
+        self.viewModel = viewModel
+        self._selectedTorrentId = selectedTorrentId
+    }
+
+    init(selectedTorrentId: Binding<Int?> = .constant(nil)) {
+        self.viewModel = TorrentListViewModel()
+        self._selectedTorrentId = selectedTorrentId
     }
 
     public var body: some View {
@@ -81,9 +92,6 @@ public struct TorrentListView: View {
                     }
                 }
             }
-            .navigationDestination(for: Torrent.self) { torrent in
-                TorrentDetailView(torrent: torrent, client: viewModel.client)
-            }
             .onAppear {
                 if let environment {
                     viewModel.environment = environment
@@ -96,7 +104,8 @@ public struct TorrentListView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 viewModel.handleScenePhaseChange(to: newPhase)
             }
-            .onChange(of: environment?.activeServer?.id) { _, _ in
+            .onChange(of: environment?.clientUpdateToken) { _, _ in
+                selectedTorrentId = nil
                 viewModel.resetForNewServer()
             }
     }
@@ -129,7 +138,7 @@ public struct TorrentListView: View {
     }
 
     private var torrentList: some View {
-        let baseList = List {
+        let baseList = List(selection: $selectedTorrentId) {
             if let error = viewModel.errorMessage {
                 errorBanner(message: error)
                     .listRowInsets(EdgeInsets())
@@ -156,7 +165,7 @@ public struct TorrentListView: View {
                     .listRowBackground(Color.clear)
             } else {
                 ForEach(viewModel.filteredTorrents) { torrent in
-                    NavigationLink(value: torrent) {
+                    NavigationLink(value: torrent.id) {
                         TorrentRowView(torrent: torrent) {
                             Task {
                                 await viewModel.toggleTorrentState(torrent: torrent)
@@ -169,12 +178,18 @@ public struct TorrentListView: View {
                         ) {
                             Button("Delete Torrent Only", role: .destructive) {
                                 HapticManager.shared.torrentDeleted()
+                                if selectedTorrentId == torrent.id {
+                                    selectedTorrentId = nil
+                                }
                                 Task {
                                     await viewModel.deleteTorrent(id: torrent.id, deleteLocalData: false)
                                 }
                             }
                             Button("Delete Torrent and Data", role: .destructive) {
                                 HapticManager.shared.torrentDeleted()
+                                if selectedTorrentId == torrent.id {
+                                    selectedTorrentId = nil
+                                }
                                 Task {
                                     await viewModel.deleteTorrent(id: torrent.id, deleteLocalData: true)
                                 }
@@ -240,6 +255,7 @@ public struct TorrentListView: View {
         }
         .searchable(
             text: $viewModel.searchQuery,
+            placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search Torrents..."
         )
     }
@@ -339,14 +355,22 @@ public struct TorrentListView: View {
 
             Spacer()
 
-            Button("Try Again") {
+            Button {
                 Task {
                     await viewModel.refresh()
+                }
+            } label: {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Text("Try Again")
                 }
             }
             .font(.caption.bold())
             .buttonStyle(.bordered)
             .tint(.red)
+            .disabled(viewModel.isLoading)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)

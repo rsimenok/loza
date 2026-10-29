@@ -215,6 +215,7 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useAll]
         formatter.countStyle = .file
+        formatter.allowsNonnumericFormatting = false
         return formatter.string(fromByteCount: bytes)
     }
 
@@ -222,7 +223,9 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useAll]
         formatter.countStyle = .file
-        return "\(formatter.string(fromByteCount: bytesPerSecond))/s"
+        formatter.allowsNonnumericFormatting = false
+        let formattedBytes = formatter.string(fromByteCount: bytesPerSecond)
+        return String(localized: "\(formattedBytes)/s", comment: "Speed formatted per second, e.g. 1.5 MB/s")
     }
 
     public static func formatETA(_ etaSeconds: Int64) -> String {

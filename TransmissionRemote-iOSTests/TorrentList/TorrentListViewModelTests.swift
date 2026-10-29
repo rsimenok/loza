@@ -317,4 +317,22 @@ final class TorrentListViewModelTests: XCTestCase {
         XCTAssertNil(vm.errorMessage)
         XCTAssertFalse(vm.torrents.isEmpty)
     }
+
+    func testResetForNewServerClearsErrorAndRefreshes() async {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        vm.errorMessage = "401 Unauthorized"
+        vm.torrents = [Torrent(id: 999, name: "Old Server Torrent", status: .download)]
+
+        vm.resetForNewServer()
+
+        XCTAssertNil(vm.errorMessage)
+        XCTAssertTrue(vm.torrents.isEmpty)
+
+        // Give the spawned task a moment to refresh from mock
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        XCTAssertNil(vm.errorMessage)
+        XCTAssertFalse(vm.torrents.isEmpty)
+    }
 }

@@ -66,6 +66,7 @@ nonisolated public struct TorrentFile: Identifiable, Codable, Sendable, Equatabl
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useAll]
         formatter.countStyle = .file
+        formatter.allowsNonnumericFormatting = false
         return formatter.string(fromByteCount: length)
     }
 
@@ -74,6 +75,7 @@ nonisolated public struct TorrentFile: Identifiable, Codable, Sendable, Equatabl
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useAll]
         formatter.countStyle = .file
+        formatter.allowsNonnumericFormatting = false
         return formatter.string(fromByteCount: bytesCompleted)
     }
 

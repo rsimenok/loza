@@ -125,6 +125,6 @@ TransmissionRemote-iOS/
 * **v1.1 (Next Step):**
   * Extract core modules (`Core/`) into a local SPM package `TransmissionKit`.
   * **Share Extension** (add torrents from Safari/Files in one tap).
-  * Shared **App Group** (`group.com.transremote.shared`) and shared Keychain access.
+  * Shared **App Group** (`group.com.smnk.transmission-remote-ios.shared`) and shared Keychain access.
   * **WidgetKit** (Home Screen widgets) and **Live Activities** (Dynamic Island).
   * **BackgroundTasks** (`BGAppRefresh`).

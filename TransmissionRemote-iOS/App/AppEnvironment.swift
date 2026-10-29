@@ -14,6 +14,7 @@ public final class AppEnvironment {
     public let serverRepository: ServerRepositoryProtocol
     public private(set) var activeServer: ServerConfig?
     public private(set) var currentClient: TransmissionClientProtocol?
+    public private(set) var clientUpdateToken: UUID = UUID()
 
     /// Pending magnet URL queued from deep linking (e.g. magnet:?xt=...)
     public var pendingMagnetURL: String?
@@ -58,17 +59,13 @@ public final class AppEnvironment {
     /// Synchronizes active server and current client with the repository's current state.
     public func syncActiveServer() {
         let latestServer = serverRepository.activeServer
-        if activeServer != latestServer {
-            activeServer = latestServer
-            if let latestServer {
-                currentClient = clientFactory(latestServer)
-            } else {
-                currentClient = nil
-            }
-        } else if latestServer == nil {
-            activeServer = nil
+        activeServer = latestServer
+        if let latestServer {
+            currentClient = clientFactory(latestServer)
+        } else {
             currentClient = nil
         }
+        clientUpdateToken = UUID()
     }
 
     public func addServer(_ server: ServerConfig, password: String? = nil) throws {

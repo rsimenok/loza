@@ -60,7 +60,9 @@ struct LocalizationAndHapticsTests {
             "Delete Torrent?", "Delete Torrent Only", "Delete Torrent and Data",
             "Server", "Security", "Authentication", "Diagnostics", "Trust Self-Signed Certificates",
             "No Servers", "No Server Selected", "No Torrents", "Search Torrents...",
-            "Invalid server URL.", "Authentication failed (401 Unauthorized).", "Cannot reach server: %@"
+            "No Torrent Selected", "Select a torrent from the sidebar to view details, files, and connected peers.",
+            "Invalid server URL.", "Authentication failed (401 Unauthorized).", "Cannot reach server: %@",
+            "%@/s"
         ]
 
         for key in requiredKeys {
@@ -80,6 +82,45 @@ struct LocalizationAndHapticsTests {
                 #expect(localizations["ru"] == nil, "Russian language must be strictly excluded! Found in key: \(key)")
             }
         }
+    }
+
+    @Test func testSpeedFormattingUkrainianLocalization() throws {
+        let bundle = Bundle(for: KeychainService.self)
+        let possibleUrls = [
+            Bundle.main.url(forResource: "Localizable", withExtension: "xcstrings"),
+            bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
+            URL(fileURLWithPath: #file)
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+                .appendingPathComponent("TransmissionRemote-iOS/Resources/Localization/Localizable.xcstrings")
+        ].compactMap { $0 }
+
+        guard let catalogUrl = possibleUrls.first(where: { FileManager.default.fileExists(atPath: $0.path) }) else {
+            Issue.record("Localizable.xcstrings file not found")
+            return
+        }
+
+        let data = try Data(contentsOf: catalogUrl)
+        let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        guard let strings = jsonObject?["strings"] as? [String: [String: Any]] else {
+            Issue.record("No 'strings' dictionary found")
+            return
+        }
+
+        guard let speedEntry = strings["%@/s"],
+              let localizations = speedEntry["localizations"] as? [String: [String: Any]],
+              let ukEntry = localizations["uk"],
+              let stringUnit = ukEntry["stringUnit"] as? [String: Any],
+              let ukValue = stringUnit["value"] as? String else {
+            Issue.record("Missing '%@/s' Ukrainian localization")
+            return
+        }
+
+        // In Ukrainian, second is abbreviated as 'с' (Cyrillic \u{0441}), NOT Latin 's' (\u{0073})
+        #expect(ukValue == "%@/с")
+        #expect(ukValue.contains("\u{0441}"))
+        #expect(!ukValue.contains("s"))
     }
 
     @Test func testInfoPlistCatalogIntegrity() throws {

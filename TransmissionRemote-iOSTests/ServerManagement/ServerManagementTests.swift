@@ -291,4 +291,39 @@ struct ServerManagementTests {
         #expect(env.activeServer == nil)
         #expect(env.currentClient == nil)
     }
+
+    @Test func testActiveServerPasswordUpdateRecreatesClientAndUpdatesToken() async throws {
+        let (repo, _) = createTestRepository()
+        let env = AppEnvironment(
+            serverRepository: repo,
+            clientFactory: { config in
+                MockTransmissionClient(simulatedDelayNanoseconds: 0)
+            }
+        )
+
+        let server = ServerConfig(name: "Home Server", host: "192.168.1.50")
+        try env.addServer(server, password: "initial_password")
+
+        let initialClient = env.currentClient
+        let initialToken = env.clientUpdateToken
+        #expect(initialClient != nil)
+
+        // Updating only the password on the active server
+        try env.updateServer(server, password: "new_updated_password")
+
+        #expect(env.activeServer?.id == server.id)
+        #expect(repo.getPassword(for: server.id) == "new_updated_password")
+        #expect(env.clientUpdateToken != initialToken)
+        #expect((env.currentClient as AnyObject) !== (initialClient as AnyObject))
+    }
+
+    @Test func testUpdateServerClearsPasswordWhenNil() async throws {
+        let (repo, _) = createTestRepository()
+        let server = ServerConfig(name: "Test NAS", host: "10.0.0.5")
+        try repo.addServer(server, password: "secret_password")
+        #expect(repo.getPassword(for: server.id) == "secret_password")
+
+        try repo.updateServer(server, password: nil)
+        #expect(repo.getPassword(for: server.id) == nil)
+    }
 }

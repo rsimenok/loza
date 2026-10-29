@@ -114,7 +114,7 @@ public struct AddTorrentView: View {
                                     .lineLimit(1)
 
                                 if let data = viewModel.selectedFileData {
-                                    Text(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))
+                                    Text(Torrent.formatBytes(Int64(data.count)))
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

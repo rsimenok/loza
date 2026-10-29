@@ -16,13 +16,16 @@ struct TorrentDetailView: View {
     @State private var viewModel: TorrentDetailViewModel
     @State private var showDeleteConfirmation: Bool = false
     @State private var hasCopiedHash: Bool = false
+    private var onDeleted: (() -> Void)?
 
-    init(torrent: Torrent, client: TransmissionClientProtocol? = nil) {
+    init(torrent: Torrent, client: TransmissionClientProtocol? = nil, onDeleted: (() -> Void)? = nil) {
         self._viewModel = State(wrappedValue: TorrentDetailViewModel(torrent: torrent, client: client))
+        self.onDeleted = onDeleted
     }
 
-    init(viewModel: TorrentDetailViewModel) {
+    init(viewModel: TorrentDetailViewModel, onDeleted: (() -> Void)? = nil) {
         self._viewModel = State(wrappedValue: viewModel)
+        self.onDeleted = onDeleted
     }
 
     var body: some View {
@@ -91,6 +94,7 @@ struct TorrentDetailView: View {
                         Task {
                             do {
                                 try await viewModel.delete(deleteLocalData: false)
+                                onDeleted?()
                                 dismiss()
                             } catch {
                                 // Error handled by viewModel.errorMessage
@@ -102,6 +106,7 @@ struct TorrentDetailView: View {
                         Task {
                             do {
                                 try await viewModel.delete(deleteLocalData: true)
+                                onDeleted?()
                                 dismiss()
                             } catch {
                                 // Error handled by viewModel.errorMessage

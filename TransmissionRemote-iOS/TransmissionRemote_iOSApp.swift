@@ -14,7 +14,7 @@ struct TransmissionRemote_iOSApp: App {
     init() {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--uitesting-mock") {
-            let suiteName = "com.smnk.TransmissionRemote.uitesting"
+            let suiteName = "com.smnk.transmission-remote-ios.uitesting"
             let defaults = UserDefaults(suiteName: suiteName) ?? .standard
             defaults.removePersistentDomain(forName: suiteName)
             let repo = ServerRepository(

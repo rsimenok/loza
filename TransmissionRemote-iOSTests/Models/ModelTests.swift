@@ -150,6 +150,19 @@ struct ModelTests {
         #expect(Torrent.formatETA(90000) == "1d 1h")
     }
 
+    @Test func testTorrentSpeedAndBytesZeroNumericFormatting() {
+        let zeroBytes = Torrent.formatBytes(0)
+        let zeroSpeed = Torrent.formatSpeed(0)
+
+        #expect(zeroBytes.contains("0"))
+        #expect(!zeroBytes.localizedCaseInsensitiveContains("zero"))
+        #expect(!zeroBytes.localizedCaseInsensitiveContains("нуль"))
+
+        #expect(zeroSpeed.contains("0"))
+        #expect(!zeroSpeed.localizedCaseInsensitiveContains("zero"))
+        #expect(!zeroSpeed.localizedCaseInsensitiveContains("нуль"))
+    }
+
     // MARK: - SessionStats Tests
 
     @Test func testSessionStatsDecoding() throws {
