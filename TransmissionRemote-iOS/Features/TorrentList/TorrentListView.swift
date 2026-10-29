@@ -284,7 +284,12 @@ struct TorrentListView: View {
                 selectedTorrentId = torrent.id
             }
         } else {
-            NavigationLink(value: torrent.id) {
+            ZStack {
+                NavigationLink(value: torrent.id) {
+                    EmptyView()
+                }
+                .opacity(0)
+
                 TorrentRowView(
                     torrent: torrent,
                     isSelected: false
