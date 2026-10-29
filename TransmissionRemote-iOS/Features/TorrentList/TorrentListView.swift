@@ -165,17 +165,29 @@ struct TorrentListView: View {
                     .listRowBackground(Color.clear)
             } else {
                 ForEach(viewModel.filteredTorrents) { torrent in
-                    NavigationLink(value: torrent.id) {
-                        TorrentRowView(torrent: torrent) {
+                    ZStack {
+                        NavigationLink(value: torrent.id) {
+                            EmptyView()
+                        }
+                        .opacity(0)
+
+                        TorrentRowView(
+                            torrent: torrent,
+                            isSelected: selectedTorrentId == torrent.id
+                        ) {
                             Task {
                                 await viewModel.toggleTorrentState(torrent: torrent)
                             }
                         }
-                        .confirmationDialog(
-                            "Delete Torrent?",
-                            isPresented: deleteConfirmationBinding(for: torrent),
-                            titleVisibility: .visible
-                        ) {
+                    }
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .confirmationDialog(
+                        "Delete Torrent?",
+                        isPresented: deleteConfirmationBinding(for: torrent),
+                        titleVisibility: .visible
+                    ) {
                             Button("Delete Torrent Only", role: .destructive) {
                                 HapticManager.shared.torrentDeleted()
                                 if selectedTorrentId == torrent.id {
@@ -200,7 +212,6 @@ struct TorrentListView: View {
                         } message: {
                             Text("Are you sure you want to delete \"\(torrent.name)\"?")
                         }
-                    }
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             HapticManager.shared.torrentStateToggled()
@@ -227,6 +238,8 @@ struct TorrentListView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color(.systemGroupedBackground))
 
         return Group {
             if #available(iOS 26.0, *) {
@@ -255,7 +268,6 @@ struct TorrentListView: View {
         }
         .searchable(
             text: $viewModel.searchQuery,
-            placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search Torrents..."
         )
     }

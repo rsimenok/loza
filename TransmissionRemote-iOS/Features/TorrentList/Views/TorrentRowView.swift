@@ -7,45 +7,50 @@
 
 import SwiftUI
 
-/// Cell representing a single torrent download/upload with real-time metrics and quick control.
-public struct TorrentRowView: View {
-    public let torrent: Torrent
-    public let onToggleState: () -> Void
+/// Card representing a single torrent download/upload with real-time metrics and quick control.
+struct TorrentRowView: View {
+    let torrent: Torrent
+    let isSelected: Bool
+    let onToggleState: () -> Void
 
-    public init(
+    init(
         torrent: Torrent,
+        isSelected: Bool = false,
         onToggleState: @escaping () -> Void
     ) {
         self.torrent = torrent
+        self.isSelected = isSelected
         self.onToggleState = onToggleState
     }
 
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Header: Title, status badge, and quick play/pause button
-            HStack(alignment: .top, spacing: 8) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(torrent.name)
-                        .font(.body.weight(.semibold))
-                        .lineLimit(2)
-                        .foregroundStyle(.primary)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Header: Status badge & tactile Play/Pause button
+            HStack(alignment: .center) {
+                statusBadge
 
-                    statusBadge
-                }
-
-                Spacer(minLength: 8)
+                Spacer()
 
                 Button {
                     HapticManager.shared.torrentStateToggled()
                     onToggleState()
                 } label: {
-                    Image(systemName: torrent.status.isRunning ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(torrent.status.isRunning ? Color.orange : Color.accentColor)
+                    Image(systemName: torrent.status.isRunning ? "pause.fill" : "play.fill")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(torrent.status.isRunning ? Color(uiColor: .secondaryLabel) : Color.accentColor)
+                        .frame(width: 28, height: 28)
+                        .background(Color(.tertiarySystemFill))
+                        .clipShape(Circle())
                 }
                 .buttonStyle(.borderless)
                 .accessibilityLabel(torrent.status.isRunning ? String(localized: "Pause") : String(localized: "Start"))
             }
+
+            // Title
+            Text(torrent.name)
+                .font(.body.weight(.semibold))
+                .lineLimit(2)
+                .foregroundStyle(Color(uiColor: .label))
 
             // Error description (if any)
             if torrent.hasError {
@@ -59,16 +64,14 @@ public struct TorrentRowView: View {
                 .lineLimit(1)
             }
 
-            // Progress Bar
-            ProgressView(value: min(1.0, max(0.0, torrent.percentDone)))
-                .progressViewStyle(.linear)
-                .tint(progressTint)
+            // Progress Bar (Sleek 4pt rounded capsule)
+            customProgressBar
 
-            // Primary Metrics: Percent, total size, ETA
+            // Primary Metrics: Percent, total size, ETA / Ratio
             HStack {
                 Text("\(torrent.percentDoneString) • \(torrent.formattedTotalSize)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
 
                 Spacer()
 
@@ -79,11 +82,11 @@ public struct TorrentRowView: View {
                         Text("ETA: \(torrent.formattedETA)")
                     }
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
                 } else if torrent.status.isSeeding {
                     Text("Ratio: \(torrent.formattedUploadRatio)")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                 }
             }
 
@@ -96,7 +99,7 @@ public struct TorrentRowView: View {
                         Text(torrent.formattedDownloadSpeed)
                             .font(.caption.monospacedDigit())
                     }
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.accentColor)
                 }
 
                 if torrent.rateUpload > 0 || torrent.status.isSeeding {
@@ -106,7 +109,7 @@ public struct TorrentRowView: View {
                         Text(torrent.formattedUploadSpeed)
                             .font(.caption.monospacedDigit())
                     }
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
                 }
 
                 Spacer()
@@ -117,27 +120,55 @@ public struct TorrentRowView: View {
                     Text("\(torrent.peersConnected) (↓\(torrent.peersSendingToUs) • ↑\(torrent.peersGettingFromUs))")
                         .font(.caption.monospacedDigit())
                 }
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
         }
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.accentColor, lineWidth: 2)
+            }
+        }
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: - Subviews & Styling
+
+    @ViewBuilder
+    private var customProgressBar: some View {
+        GeometryReader { proxy in
+            let progress = min(1.0, max(0.0, torrent.percentDone))
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color(.tertiarySystemFill))
+                    .frame(height: 4)
+
+                if progress > 0 {
+                    Capsule()
+                        .fill(progressTint)
+                        .frame(width: max(4, proxy.size.width * CGFloat(progress)), height: 4)
+                }
+            }
+        }
+        .frame(height: 4)
+    }
 
     @ViewBuilder
     private var statusBadge: some View {
         HStack(spacing: 4) {
             Circle()
                 .fill(statusColor)
-                .frame(width: 7, height: 7)
+                .frame(width: 6, height: 6)
 
             Text(statusTitle)
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(statusColor)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
         .background(statusColor.opacity(0.12))
         .clipShape(Capsule())
     }
@@ -155,9 +186,9 @@ public struct TorrentRowView: View {
         }
         switch torrent.status {
         case .download:
-            return .blue
+            return .accentColor
         case .seed:
-            return .green
+            return Color(uiColor: .systemGreen).opacity(0.85)
         case .stopped:
             return .secondary
         case .check, .checkWait:
@@ -173,13 +204,13 @@ public struct TorrentRowView: View {
         }
         switch torrent.status {
         case .seed, .seedWait:
-            return .green
+            return Color(uiColor: .systemGreen).opacity(0.45)
         case .stopped:
-            return .gray
+            return Color(.tertiaryLabel)
         case .check, .checkWait:
             return .orange
         case .download, .downloadWait:
-            return .blue
+            return Color.accentColor
         }
     }
 }
@@ -189,6 +220,9 @@ public struct TorrentRowView: View {
     List {
         ForEach(samples) { sample in
             TorrentRowView(torrent: sample) { }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
         }
     }
+    .listStyle(.plain)
 }
