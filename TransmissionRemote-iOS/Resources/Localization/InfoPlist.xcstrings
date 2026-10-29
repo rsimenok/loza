@@ -1,0 +1,59 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "TransmissionRemote-iOS"
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmission Remote benötigt Zugriff auf Ihr lokales Netzwerk, um eine Verbindung zu Transmission-Servern herzustellen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmission Remote needs access to your local network to connect to Transmission servers."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmission Remote necesita acceso a su red local para conectarse a los servidores Transmission."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmission Remote a besoin d'accéder à votre réseau local pour se connecter aux serveurs Transmission."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmission Remote wymaga dostępu do sieci lokalnej w celu połączenia z serwerami Transmission."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmission Remote потребує доступу до вашої локальної мережі для підключення до серверів Transmission."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
