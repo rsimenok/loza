@@ -132,7 +132,6 @@ struct TorrentRowView: View {
                     .stroke(Color.accentColor, lineWidth: 2)
             }
         }
-        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: - Subviews & Styling
@@ -154,6 +153,7 @@ struct TorrentRowView: View {
             }
         }
         .frame(height: 4)
+        .allowsHitTesting(false)
     }
 
     @ViewBuilder
@@ -188,7 +188,7 @@ struct TorrentRowView: View {
         case .download:
             return .accentColor
         case .seed:
-            return Color(uiColor: .systemGreen).opacity(0.85)
+            return .green
         case .stopped:
             return .secondary
         case .check, .checkWait:
@@ -204,7 +204,7 @@ struct TorrentRowView: View {
         }
         switch torrent.status {
         case .seed, .seedWait:
-            return Color(uiColor: .systemGreen).opacity(0.45)
+            return Color.seedingProgress
         case .stopped:
             return Color(.tertiaryLabel)
         case .check, .checkWait:

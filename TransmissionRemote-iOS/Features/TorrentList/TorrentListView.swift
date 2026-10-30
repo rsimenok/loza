@@ -17,6 +17,7 @@ struct TorrentListView: View {
     @Bindable var viewModel: TorrentListViewModel
     @Binding var selectedTorrentId: Int?
     @State private var isPresentingServerList: Bool = false
+    @State private var isPresentingAbout: Bool = false
     @State private var isPresentingAddTorrent: Bool = false
     @State private var filterBarHeight: CGFloat = 46
 
@@ -72,6 +73,11 @@ struct TorrentListView: View {
                                 }
                             }
                         }
+                }
+            }
+            .sheet(isPresented: $isPresentingAbout) {
+                NavigationStack {
+                    AboutView()
                 }
             }
             .sheet(isPresented: Binding(
@@ -377,6 +383,12 @@ struct TorrentListView: View {
                 isPresentingServerList = true
             } label: {
                 Label("Server Management", systemImage: "server.rack")
+            }
+
+            Button {
+                isPresentingAbout = true
+            } label: {
+                Label("About", systemImage: "info.circle")
             }
         } label: {
             Image(systemName: "server.rack")

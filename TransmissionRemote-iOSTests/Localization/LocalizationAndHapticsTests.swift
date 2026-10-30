@@ -62,7 +62,9 @@ struct LocalizationAndHapticsTests {
             "No Servers", "No Server Selected", "No Torrents", "Search Torrents...",
             "No Torrent Selected", "Select a torrent from the sidebar to view details, files, and connected peers.",
             "Invalid server URL.", "Authentication failed (401 Unauthorized).", "Cannot reach server: %@",
-            "%@/s"
+            "%@/s",
+            "About", "Free and open-source utility for remote management of your Transmission daemon.",
+            "Project", "Source Code on GitHub", "Third-Party Software", "Version %@ (%@)"
         ]
 
         for key in requiredKeys {
