@@ -1,6 +1,6 @@
 //
 //  HapticManager.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
@@ -44,6 +44,11 @@ public final class HapticManager: Sendable {
     /// Triggered when testing server connection fails.
     public func connectionTestFailed() {
         notification(.error)
+    }
+
+    /// Triggered when an in-app tip or subscription purchase succeeds.
+    func purchaseSuccess() {
+        notification(.success)
     }
 
     // MARK: - Core Generators

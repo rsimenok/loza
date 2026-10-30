@@ -1,6 +1,6 @@
 //
 //  TorrentListView.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
@@ -18,6 +18,7 @@ struct TorrentListView: View {
     @Binding var selectedTorrentId: Int?
     @State private var isPresentingServerList: Bool = false
     @State private var isPresentingAbout: Bool = false
+    @State private var isPresentingTipJar: Bool = false
     @State private var isPresentingAddTorrent: Bool = false
     @State private var filterBarHeight: CGFloat = 46
 
@@ -34,7 +35,7 @@ struct TorrentListView: View {
         self._selectedTorrentId = selectedTorrentId
     }
 
-    public var body: some View {
+    var body: some View {
         let activeServerName = environment?.activeServer?.name ?? ""
         let downloadSpeed = viewModel.sessionStats?.downloadSpeed ?? 0
         let uploadSpeed = viewModel.sessionStats?.uploadSpeed ?? 0
@@ -78,6 +79,11 @@ struct TorrentListView: View {
             .sheet(isPresented: $isPresentingAbout) {
                 NavigationStack {
                     AboutView()
+                }
+            }
+            .sheet(isPresented: $isPresentingTipJar) {
+                NavigationStack {
+                    TipJarView()
                 }
             }
             .sheet(isPresented: Binding(
@@ -280,11 +286,7 @@ struct TorrentListView: View {
             TorrentRowView(
                 torrent: torrent,
                 isSelected: selectedTorrentId == torrent.id
-            ) {
-                Task {
-                    await viewModel.toggleTorrentState(torrent: torrent)
-                }
-            }
+            )
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .onTapGesture {
                 selectedTorrentId = torrent.id
@@ -299,11 +301,7 @@ struct TorrentListView: View {
                 TorrentRowView(
                     torrent: torrent,
                     isSelected: false
-                ) {
-                    Task {
-                        await viewModel.toggleTorrentState(torrent: torrent)
-                    }
-                }
+                )
             }
         }
     }
@@ -383,6 +381,12 @@ struct TorrentListView: View {
                 isPresentingServerList = true
             } label: {
                 Label("Server Management", systemImage: "server.rack")
+            }
+
+            Button {
+                isPresentingTipJar = true
+            } label: {
+                Label("Support Loza", systemImage: "heart.fill")
             }
 
             Button {

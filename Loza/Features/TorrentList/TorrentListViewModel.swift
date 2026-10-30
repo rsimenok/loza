@@ -1,6 +1,6 @@
 //
 //  TorrentListViewModel.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
@@ -11,40 +11,40 @@ import SwiftUI
 
 @Observable
 @MainActor
-public final class TorrentListViewModel {
+final class TorrentListViewModel {
     // MARK: - Published State
 
-    public var torrents: [Torrent] = []
-    public var sessionStats: SessionStats?
-    public var isLoading: Bool = false
-    public var errorMessage: String?
-    public var selectedFilter: TorrentFilter = .all
-    public var searchQuery: String = ""
-    public var torrentToDelete: Torrent?
-    public var showDeleteConfirmation: Bool = false
+    var torrents: [Torrent] = []
+    var sessionStats: SessionStats?
+    var isLoading: Bool = false
+    var errorMessage: String?
+    var selectedFilter: TorrentFilter = .all
+    var searchQuery: String = ""
+    var torrentToDelete: Torrent?
+    var showDeleteConfirmation: Bool = false
 
     // MARK: - Dependencies & Configuration
 
-    public weak var environment: AppEnvironment?
+    weak var environment: AppEnvironment?
     private var explicitClient: TransmissionClientProtocol?
-    public var pollingInterval: TimeInterval
+    var pollingInterval: TimeInterval
 
     nonisolated(unsafe) private var pollingTask: Task<Void, Never>?
     private var pendingStatusByTorrentId: [Int: (status: TorrentStatus, timestamp: Date)] = [:]
 
     /// Indicates whether background polling is currently running.
-    public var isPolling: Bool {
+    var isPolling: Bool {
         pollingTask != nil && !(pollingTask?.isCancelled ?? true)
     }
 
     /// Resolves the active Transmission client from explicit injection or current AppEnvironment.
-    public var client: TransmissionClientProtocol? {
+    var client: TransmissionClientProtocol? {
         explicitClient ?? environment?.currentClient
     }
 
     // MARK: - Initialization
 
-    public init(
+    init(
         client: TransmissionClientProtocol? = nil,
         environment: AppEnvironment? = nil,
         pollingInterval: TimeInterval = 2.5
@@ -61,7 +61,7 @@ public final class TorrentListViewModel {
     // MARK: - Computed Properties
 
     /// Filtered list of torrents based on selectedFilter and searchQuery, sorted by name.
-    public var filteredTorrents: [Torrent] {
+    var filteredTorrents: [Torrent] {
         let filter = selectedFilter
         let trimmedQuery = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -83,14 +83,14 @@ public final class TorrentListViewModel {
     }
 
     /// Returns the number of torrents matching the given filter.
-    public func count(for filter: TorrentFilter) -> Int {
+    func count(for filter: TorrentFilter) -> Int {
         torrents.filter { filter.matches($0) }.count
     }
 
     // MARK: - Polling Management
 
     /// Starts polling the server every `pollingInterval` seconds.
-    public func startPolling() {
+    func startPolling() {
         guard pollingTask == nil || pollingTask?.isCancelled == true else { return }
 
         pollingTask = Task { [weak self] in
@@ -109,13 +109,13 @@ public final class TorrentListViewModel {
     }
 
     /// Cancels active polling to conserve battery when the app is inactive or in background.
-    public func stopPolling() {
+    func stopPolling() {
         pollingTask?.cancel()
         pollingTask = nil
     }
 
     /// Handles lifecycle phase changes: cancels polling when backgrounded, resumes when active.
-    public func handleScenePhaseChange(to phase: ScenePhase) {
+    func handleScenePhaseChange(to phase: ScenePhase) {
         switch phase {
         case .active:
             startPolling()
@@ -129,14 +129,14 @@ public final class TorrentListViewModel {
     // MARK: - Data Fetching
 
     /// Refreshes torrents and session stats.
-    public func refresh() async {
+    func refresh() async {
         isLoading = true
         defer { isLoading = false }
         await pollOnce()
     }
 
     /// Fetches the latest torrents and session statistics in parallel.
-    public func pollOnce() async {
+    func pollOnce() async {
         guard let client = client else {
             return
         }
@@ -185,7 +185,7 @@ public final class TorrentListViewModel {
     }
 
     /// Resets state when switching to a different active server.
-    public func resetForNewServer() {
+    func resetForNewServer() {
         torrents = []
         sessionStats = nil
         errorMessage = nil
@@ -197,7 +197,7 @@ public final class TorrentListViewModel {
     // MARK: - Torrent Actions
 
     /// Toggles the running/stopped state of a torrent.
-    public func toggleTorrentState(torrent: Torrent) async {
+    func toggleTorrentState(torrent: Torrent) async {
         if torrent.status.isRunning {
             await stopTorrent(id: torrent.id)
         } else {
@@ -206,7 +206,7 @@ public final class TorrentListViewModel {
     }
 
     /// Starts a torrent by ID.
-    public func startTorrent(id: Int) async {
+    func startTorrent(id: Int) async {
         guard let client = client else { return }
         let isCompleted = torrents.first(where: { $0.id == id })?.isCompleted ?? false
         let targetStatus: TorrentStatus = isCompleted ? .seed : .download
@@ -225,7 +225,7 @@ public final class TorrentListViewModel {
     }
 
     /// Stops / pauses a torrent by ID.
-    public func stopTorrent(id: Int) async {
+    func stopTorrent(id: Int) async {
         guard let client = client else { return }
         pendingStatusByTorrentId[id] = (.stopped, Date())
         if let index = torrents.firstIndex(where: { $0.id == id }) {
@@ -244,7 +244,7 @@ public final class TorrentListViewModel {
     }
 
     /// Deletes a torrent, optionally removing downloaded data.
-    public func deleteTorrent(id: Int, deleteLocalData: Bool) async {
+    func deleteTorrent(id: Int, deleteLocalData: Bool) async {
         guard let client = client else { return }
         do {
             try await client.removeTorrents(ids: [id], deleteLocalData: deleteLocalData)
@@ -260,7 +260,7 @@ public final class TorrentListViewModel {
     }
 
     /// Prepares confirmation dialog for deleting the specified torrent.
-    public func confirmDelete(for torrent: Torrent) {
+    func confirmDelete(for torrent: Torrent) {
         self.torrentToDelete = torrent
         self.showDeleteConfirmation = true
     }

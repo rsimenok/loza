@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FCC85F4530938492002F079C"
-               BuildableName = "Retransmission.app"
-               BlueprintName = "Retransmission"
-               ReferencedContainer = "container:Retransmission.xcodeproj">
+               BuildableName = "Loza.app"
+               BlueprintName = "Loza"
+               ReferencedContainer = "container:Loza.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,9 +35,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FCC85F5230938494002F079C"
-               BuildableName = "RetransmissionTests.xctest"
-               BlueprintName = "RetransmissionTests"
-               ReferencedContainer = "container:Retransmission.xcodeproj">
+               BuildableName = "LozaTests.xctest"
+               BlueprintName = "LozaTests"
+               ReferencedContainer = "container:Loza.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -45,12 +45,15 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FCC85F5C30938494002F079C"
-               BuildableName = "RetransmissionUITests.xctest"
-               BlueprintName = "RetransmissionUITests"
-               ReferencedContainer = "container:Retransmission.xcodeproj">
+               BuildableName = "LozaUITests.xctest"
+               BlueprintName = "LozaUITests"
+               ReferencedContainer = "container:Loza.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
+      <StoreKitConfigurationFileReference
+         identifier = "../../Loza/Resources/Loza.storekit">
+      </StoreKitConfigurationFileReference>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -67,11 +70,14 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FCC85F4530938492002F079C"
-            BuildableName = "Retransmission.app"
-            BlueprintName = "Retransmission"
-            ReferencedContainer = "container:Retransmission.xcodeproj">
+            BuildableName = "Loza.app"
+            BlueprintName = "Loza"
+            ReferencedContainer = "container:Loza.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../Loza/Resources/Loza.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -84,9 +90,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FCC85F4530938492002F079C"
-            BuildableName = "Retransmission.app"
-            BlueprintName = "Retransmission"
-            ReferencedContainer = "container:Retransmission.xcodeproj">
+            BuildableName = "Loza.app"
+            BlueprintName = "Loza"
+            ReferencedContainer = "container:Loza.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

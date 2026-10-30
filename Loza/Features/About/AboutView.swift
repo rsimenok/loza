@@ -1,6 +1,6 @@
 //
 //  AboutView.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 30.10.2026.
 //
@@ -11,9 +11,16 @@ import SwiftUI
 @MainActor
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppEnvironment.self) private var environment: AppEnvironment?
+
+    @State private var isPresentingTipJar = false
 
     private let gitHubURL = URL(string: "https://github.com/rsimenok/trans-remote-ios")!
     private let alamofireURL = URL(string: "https://github.com/Alamofire/Alamofire")!
+
+    private var isSupporter: Bool {
+        environment?.purchaseManager.isSupporter ?? false
+    }
 
     private var appVersionString: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -24,6 +31,7 @@ struct AboutView: View {
     var body: some View {
         Form {
             headerSection
+            supportSection
             projectSection
             thirdPartySection
         }
@@ -36,6 +44,11 @@ struct AboutView: View {
                 }
             }
         }
+        .sheet(isPresented: $isPresentingTipJar) {
+            NavigationStack {
+                TipJarView()
+            }
+        }
     }
 
     // MARK: - Subviews
@@ -45,13 +58,28 @@ struct AboutView: View {
             VStack(spacing: 12) {
                 appIconView
 
-                Text("Transmission Remote")
+                Text("Loza")
                     .font(.title3.bold())
                     .foregroundStyle(.primary)
 
                 Text(appVersionString)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+
+                if isSupporter {
+                    HStack(spacing: 5) {
+                        Image(systemName: "star.fill")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.yellow)
+                        Text("Supporter")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.yellow.opacity(0.18))
+                    .clipShape(Capsule())
+                }
 
                 Text("Free and open-source utility for remote management of your Transmission daemon.")
                     .font(.footnote)
@@ -87,6 +115,23 @@ struct AboutView: View {
             }
         }
         .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
+    }
+
+    private var supportSection: some View {
+        Section("Support") {
+            Button {
+                isPresentingTipJar = true
+            } label: {
+                HStack {
+                    Label("Tip Jar", systemImage: "heart.fill")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
     }
 
     private var projectSection: some View {

@@ -1,6 +1,6 @@
 //
 //  LocalizationAndHapticsTests.swift
-//  TransmissionRemote-iOSTests
+//  LozaTests
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
@@ -8,7 +8,7 @@
 import Testing
 import Foundation
 import UIKit
-@testable import TransmissionRemote_iOS
+@testable import Loza
 
 struct LocalizationAndHapticsTests {
 
@@ -26,7 +26,7 @@ struct LocalizationAndHapticsTests {
                 .deletingLastPathComponent()
                 .deletingLastPathComponent()
                 .deletingLastPathComponent()
-                .appendingPathComponent("TransmissionRemote-iOS/Resources/Localization/Localizable.xcstrings")
+                .appendingPathComponent("Loza/Resources/Localization/Localizable.xcstrings")
         ].compactMap { $0 }
 
         guard let catalogUrl = possibleUrls.first(where: { FileManager.default.fileExists(atPath: $0.path) }) else {
@@ -64,7 +64,8 @@ struct LocalizationAndHapticsTests {
             "Invalid server URL.", "Authentication failed (401 Unauthorized).", "Cannot reach server: %@",
             "%@/s",
             "About", "Free and open-source utility for remote management of your Transmission daemon.",
-            "Project", "Source Code on GitHub", "Third-Party Software", "Version %@ (%@)"
+            "Project", "Source Code on GitHub", "Third-Party Software", "Version %@ (%@)",
+            "Support Loza", "Tip Jar", "Supporter", "Restore Purchases", "Loza Supporter Club", "Monthly Supporter", "One-Time Tips", "Thank You!"
         ]
 
         for key in requiredKeys {
@@ -95,7 +96,7 @@ struct LocalizationAndHapticsTests {
                 .deletingLastPathComponent()
                 .deletingLastPathComponent()
                 .deletingLastPathComponent()
-                .appendingPathComponent("TransmissionRemote-iOS/Resources/Localization/Localizable.xcstrings")
+                .appendingPathComponent("Loza/Resources/Localization/Localizable.xcstrings")
         ].compactMap { $0 }
 
         guard let catalogUrl = possibleUrls.first(where: { FileManager.default.fileExists(atPath: $0.path) }) else {
@@ -134,7 +135,7 @@ struct LocalizationAndHapticsTests {
                 .deletingLastPathComponent()
                 .deletingLastPathComponent()
                 .deletingLastPathComponent()
-                .appendingPathComponent("TransmissionRemote-iOS/Resources/Localization/InfoPlist.xcstrings")
+                .appendingPathComponent("Loza/Resources/Localization/InfoPlist.xcstrings")
         ].compactMap { $0 }
 
         guard let catalogUrl = possibleUrls.first(where: { FileManager.default.fileExists(atPath: $0.path) }) else {
@@ -221,6 +222,7 @@ struct LocalizationAndHapticsTests {
         haptics.filterSelected()
         haptics.connectionTestSucceeded()
         haptics.connectionTestFailed()
+        haptics.purchaseSuccess()
 
         // Verify core generator wrappers
         haptics.impact(.medium)
