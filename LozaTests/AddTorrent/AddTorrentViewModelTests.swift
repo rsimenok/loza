@@ -1,13 +1,13 @@
 //
 //  AddTorrentViewModelTests.swift
-//  TransmissionRemote-iOSTests
+//  LozaTests
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
 
 import XCTest
 import UIKit
-@testable import TransmissionRemote_iOS
+@testable import Loza
 
 @MainActor
 final class AddTorrentViewModelTests: XCTestCase {

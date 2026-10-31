@@ -1,6 +1,6 @@
 //
 //  KeychainService.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
@@ -37,7 +37,7 @@ public final class KeychainService: KeychainServiceProtocol, Sendable {
 
     private let service: String
 
-    public init(service: String = "com.smnk.transmission-remote-ios") {
+    public init(service: String = "com.smnk.loza") {
         self.service = service
     }
 

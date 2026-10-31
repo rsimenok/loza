@@ -15,7 +15,7 @@ struct AboutView: View {
 
     @State private var isPresentingTipJar = false
 
-    private let gitHubURL = URL(string: "https://github.com/rsimenok/trans-remote-ios")!
+    private let gitHubURL = URL(string: "https://github.com/rsimenok/loza")!
     private let alamofireURL = URL(string: "https://github.com/Alamofire/Alamofire")!
 
     private var isSupporter: Bool {

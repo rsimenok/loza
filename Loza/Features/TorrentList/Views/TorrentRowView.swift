@@ -1,50 +1,29 @@
 //
 //  TorrentRowView.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
 
 import SwiftUI
 
-/// Card representing a single torrent download/upload with real-time metrics and quick control.
+/// Card representing a single torrent download/upload with real-time metrics.
 struct TorrentRowView: View {
     let torrent: Torrent
     let isSelected: Bool
-    let onToggleState: () -> Void
 
     init(
         torrent: Torrent,
-        isSelected: Bool = false,
-        onToggleState: @escaping () -> Void
+        isSelected: Bool = false
     ) {
         self.torrent = torrent
         self.isSelected = isSelected
-        self.onToggleState = onToggleState
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Header: Status badge & tactile Play/Pause button
-            HStack(alignment: .center) {
-                statusBadge
-
-                Spacer()
-
-                Button {
-                    HapticManager.shared.torrentStateToggled()
-                    onToggleState()
-                } label: {
-                    Image(systemName: torrent.status.isRunning ? "pause.fill" : "play.fill")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(torrent.status.isRunning ? Color(uiColor: .secondaryLabel) : Color.accentColor)
-                        .frame(width: 28, height: 28)
-                        .background(Color(.tertiarySystemFill))
-                        .clipShape(Circle())
-                }
-                .buttonStyle(.borderless)
-                .accessibilityLabel(torrent.status.isRunning ? String(localized: "Pause") : String(localized: "Start"))
-            }
+            // Header: Status badge
+            statusBadge
 
             // Title
             Text(torrent.name)
@@ -219,7 +198,7 @@ struct TorrentRowView: View {
     let samples = MockTransmissionClient.defaultSampleTorrents()
     List {
         ForEach(samples) { sample in
-            TorrentRowView(torrent: sample) { }
+            TorrentRowView(torrent: sample)
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
         }

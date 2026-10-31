@@ -1,13 +1,13 @@
 //
 //  InterceptorTests.swift
-//  TransmissionRemote-iOSTests
+//  LozaTests
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
 
 import XCTest
 import Alamofire
-@testable import TransmissionRemote_iOS
+@testable import Loza
 
 final class InterceptorTests: XCTestCase {
     private var testURL: URL {

@@ -1,14 +1,14 @@
 //
-//  TransmissionRemote_iOSTests.swift
-//  TransmissionRemote-iOSTests
+//  LozaTests.swift
+//  LozaTests
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
 
 import Testing
-@testable import TransmissionRemote_iOS
+@testable import Loza
 
-struct TransmissionRemote_iOSTests {
+struct LozaTests {
 
     @Test func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.

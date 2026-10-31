@@ -21,7 +21,7 @@ struct TipJarView: View {
     @State private var fallbackManager = PurchaseManager()
     @State private var isShowingManageSubscriptions = false
 
-    private let privacyPolicyURL = URL(string: "https://github.com/rsimenok/trans-remote-ios/blob/main/PRIVACY.md")!
+    private let privacyPolicyURL = URL(string: "https://github.com/rsimenok/loza/blob/main/PRIVACY.md")!
     private let termsOfUseURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
 
     var body: some View {

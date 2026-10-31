@@ -1,6 +1,6 @@
 # AGENTS.md — Instructions and Architectural Guidelines for AI Agents
 
-This file contains rules, conventions, stack details, and context for autonomous AI agents (Claude Code, Cursor, Copilot, Antigravity) working on the **Transmission Remote iOS** codebase.
+This file contains rules, conventions, stack details, and context for autonomous AI agents (Claude Code, Cursor, Copilot, Antigravity) working on the **Loza** codebase.
 
 ---
 
@@ -20,10 +20,10 @@ Due to Xcode sandboxing and caching, always provide `-derivedDataPath /tmp/Deriv
 
 ```bash
 # Build project for iOS Simulator
-xcodebuild -project TransmissionRemote-iOS.xcodeproj -scheme TransmissionRemote-iOS -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath /tmp/DerivedData build
+xcodebuild -project Loza.xcodeproj -scheme Loza -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath /tmp/DerivedData build
 
 # Run Unit Tests
-xcodebuild test -project TransmissionRemote-iOS.xcodeproj -scheme TransmissionRemote-iOS -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath /tmp/DerivedData
+xcodebuild test -project Loza.xcodeproj -scheme Loza -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath /tmp/DerivedData
 ```
 
 ---
@@ -33,7 +33,7 @@ xcodebuild test -project TransmissionRemote-iOS.xcodeproj -scheme TransmissionRe
 ### 3.1. Access Control — NO Unnecessary `public`
 * All entities within the main application target must use Swift's standard default access level — **`internal`**, or **`private` / `fileprivate`**.
 * **DO NOT use `public`** in application files! `public` is only required when code is extracted into a standalone SPM package or framework.
-* Unit tests use `@testable import TransmissionRemote_iOS`, which grants full access to all `internal` entities.
+* Unit tests use `@testable import Loza`, which grants full access to all `internal` entities.
 
 ### 3.2. Swift 6 Concurrency & State Management
 * The project strictly enforces Swift 6 Strict Concurrency checking.
@@ -42,8 +42,8 @@ xcodebuild test -project TransmissionRemote-iOS.xcodeproj -scheme TransmissionRe
 
 ### 3.3. Localization (String Catalogs)
 * All user-facing strings must be managed via String Catalogs:
-  * `TransmissionRemote-iOS/Resources/Localization/Localizable.xcstrings`
-  * `TransmissionRemote-iOS/Resources/Localization/InfoPlist.xcstrings`
+  * `Loza/Resources/Localization/Localizable.xcstrings`
+  * `Loza/Resources/Localization/InfoPlist.xcstrings`
 * **Mandatory support for 6 languages:**
   1. `en` (English) — development base language
   2. `uk` (Ukrainian) — native project language
@@ -69,7 +69,7 @@ xcodebuild test -project TransmissionRemote-iOS.xcodeproj -scheme TransmissionRe
 The codebase follows a modular, layered architecture:
 
 ```text
-TransmissionRemote-iOS/
+Loza/
 ├── App/                  # App entry point, AppEnvironment (DI container & active server state)
 ├── Core/
 │   ├── Models/           # Domain models: Torrent, ServerConfig, SessionStats, TorrentFile, Peer
@@ -125,6 +125,6 @@ TransmissionRemote-iOS/
 * **v1.1 (Next Step):**
   * Extract core modules (`Core/`) into a local SPM package `TransmissionKit`.
   * **Share Extension** (add torrents from Safari/Files in one tap).
-  * Shared **App Group** (`group.com.smnk.transmission-remote-ios.shared`) and shared Keychain access.
+  * Shared **App Group** (`group.com.smnk.loza.shared`) and shared Keychain access.
   * **WidgetKit** (Home Screen widgets) and **Live Activities** (Dynamic Island).
   * **BackgroundTasks** (`BGAppRefresh`).

@@ -1,13 +1,13 @@
 //
-//  TransmissionRemote_iOSUITests.swift
-//  TransmissionRemote-iOSUITests
+//  LozaUITests.swift
+//  LozaUITests
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
 
 import XCTest
 
-final class TransmissionRemote_iOSUITests: XCTestCase {
+final class LozaUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false

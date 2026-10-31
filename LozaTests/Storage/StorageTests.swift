@@ -1,13 +1,13 @@
 //
 //  StorageTests.swift
-//  TransmissionRemote-iOSTests
+//  LozaTests
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
 
 import Testing
 import Foundation
-@testable import TransmissionRemote_iOS
+@testable import Loza
 
 // MARK: - Mock Keychain Service for isolated tests
 

@@ -1,6 +1,6 @@
 //
-//  TransmissionRemote_iOSApp.swift
-//  TransmissionRemote-iOS
+//  LozaApp.swift
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
@@ -8,13 +8,13 @@
 import SwiftUI
 
 @main
-struct TransmissionRemote_iOSApp: App {
+struct LozaApp: App {
     @State private var environment: AppEnvironment
 
     init() {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--uitesting-mock") {
-            let suiteName = "com.smnk.transmission-remote-ios.uitesting"
+            let suiteName = "com.smnk.loza.uitesting"
             let defaults = UserDefaults(suiteName: suiteName) ?? .standard
             defaults.removePersistentDomain(forName: suiteName)
             let repo = ServerRepository(

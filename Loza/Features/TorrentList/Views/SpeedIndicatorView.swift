@@ -1,6 +1,6 @@
 //
 //  SpeedIndicatorView.swift
-//  TransmissionRemote-iOS
+//  Loza
 //
 //  Created by Roman Simenok on 29.10.2026.
 //
