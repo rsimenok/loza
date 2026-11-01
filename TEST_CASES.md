@@ -453,7 +453,7 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   5. Open `AddTorrentView` again and tap on the "Download Location" text field.
   6. Observe recent suggestions and tap the previously entered path.
 - **Expected Result:**
-  - When the field gains focus and history exists, previous paths are displayed as plain text items below the field without history icons.
+  - When the field gains focus and history exists, previous paths are displayed with a history icon (`clock.arrow.circlepath`) below the field.
   - Tapping an item fills the text field and clears keyboard focus.
   - Empty strings, whitespace, and placeholder strings (`"-"`, `"—"`) are never saved into history.
   - History is isolated to the active server.

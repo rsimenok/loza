@@ -154,9 +154,14 @@ public struct AddTorrentView: View {
                                 viewModel.downloadDir = path
                                 isLocationFocused = false
                             } label: {
-                                Text(path)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary)
+                                HStack(spacing: 8) {
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                    Text(path)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.primary)
+                                }
                             }
                             .buttonStyle(.plain)
                         }

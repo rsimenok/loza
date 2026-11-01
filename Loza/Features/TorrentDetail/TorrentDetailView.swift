@@ -353,14 +353,23 @@ struct TorrentDetailView: View {
                 Label("Tracker", systemImage: "globe")
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Label("Location", systemImage: "folder")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Text(viewModel.torrent.fullDownloadPath ?? "—")
-                    .font(.footnote.monospaced())
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "folder")
+                    .font(.body)
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 24, alignment: .center)
+                    .padding(.top, 1)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Location")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Text(viewModel.torrent.fullDownloadPath ?? "—")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
             }
             .padding(.vertical, 2)
 
