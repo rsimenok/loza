@@ -326,4 +326,17 @@ struct ServerManagementTests {
         try repo.updateServer(server, password: nil)
         #expect(repo.getPassword(for: server.id) == nil)
     }
+
+    @Test func testServerRouteHashable() {
+        let server = ServerConfig(name: "Test", host: "1.2.3.4")
+        let routeAdd = ServerRoute.add
+        let routeEdit = ServerRoute.edit(server)
+
+        #expect(routeAdd == .add)
+        #expect(routeEdit == .edit(server))
+        #expect(routeAdd != routeEdit)
+
+        let set: Set<ServerRoute> = [routeAdd, routeEdit, .add]
+        #expect(set.count == 2)
+    }
 }

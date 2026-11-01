@@ -13,8 +13,6 @@ struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppEnvironment.self) private var environment: AppEnvironment?
 
-    @State private var isPresentingTipJar = false
-
     private let gitHubURL = URL(string: "https://github.com/rsimenok/loza")!
     private let alamofireURL = URL(string: "https://github.com/Alamofire/Alamofire")!
 
@@ -38,15 +36,13 @@ struct AboutView: View {
         .navigationTitle("About")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Done") {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
                     dismiss()
+                } label: {
+                    Image(systemName: "xmark")
                 }
-            }
-        }
-        .sheet(isPresented: $isPresentingTipJar) {
-            NavigationStack {
-                TipJarView()
+                .accessibilityLabel("Close")
             }
         }
     }
@@ -119,17 +115,10 @@ struct AboutView: View {
 
     private var supportSection: some View {
         Section("Support") {
-            Button {
-                isPresentingTipJar = true
+            NavigationLink {
+                TipJarView(showsDismissButton: false)
             } label: {
-                HStack {
-                    Label("Tip Jar", systemImage: "heart.fill")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                }
+                Label("Tip Jar", systemImage: "heart.fill")
             }
         }
     }

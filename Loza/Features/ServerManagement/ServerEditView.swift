@@ -53,34 +53,30 @@ public struct ServerEditView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            Form {
-                serverSection
-                securitySection
-                authSection
-                diagnosticsSection
-            }
-            .navigationTitle(viewModel.isEditing ? "Edit Server" : "New Server")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+        Form {
+            serverSection
+            securitySection
+            authSection
+            diagnosticsSection
+        }
+        .navigationTitle(viewModel.isEditing ? "Edit Server" : "New Server")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button {
+                    saveServer()
+                } label: {
+                    Image(systemName: "checkmark")
+                        .font(.body.bold())
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        saveServer()
-                    }
-                    .disabled(!viewModel.isValid)
-                    .fontWeight(.semibold)
-                }
+                .disabled(!viewModel.isValid)
+                .accessibilityLabel("Save")
             }
-            .alert("Save Error", isPresented: $isShowingErrorAlert) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(saveErrorMessage ?? String(localized: "Unknown Error"))
-            }
+        }
+        .alert("Save Error", isPresented: $isShowingErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(saveErrorMessage ?? String(localized: "Unknown Error"))
         }
     }
 
@@ -225,15 +221,17 @@ public struct ServerEditView: View {
 }
 
 #Preview {
-    ServerEditView(
-        viewModel: ServerEditViewModel(
-            server: ServerConfig(
-                name: "Home NAS",
-                scheme: .http,
-                host: "192.168.1.100",
-                port: 9091
-            ),
-            client: MockTransmissionClient()
+    NavigationStack {
+        ServerEditView(
+            viewModel: ServerEditViewModel(
+                server: ServerConfig(
+                    name: "Home NAS",
+                    scheme: .http,
+                    host: "192.168.1.100",
+                    port: 9091
+                ),
+                client: MockTransmissionClient()
+            )
         )
-    )
+    }
 }

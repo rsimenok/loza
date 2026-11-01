@@ -24,6 +24,12 @@ struct TipJarView: View {
     private let privacyPolicyURL = URL(string: "https://github.com/rsimenok/loza/blob/main/PRIVACY.md")!
     private let termsOfUseURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
 
+    private let showsDismissButton: Bool
+
+    init(showsDismissButton: Bool = true) {
+        self.showsDismissButton = showsDismissButton
+    }
+
     var body: some View {
         ZStack {
             Form {
@@ -35,9 +41,14 @@ struct TipJarView: View {
             .navigationTitle("Support Loza")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
+                if showsDismissButton {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel("Close")
                     }
                 }
             }

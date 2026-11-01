@@ -7,14 +7,18 @@
 
 import SwiftUI
 
+enum ServerRoute: Hashable {
+    case add
+    case edit(ServerConfig)
+}
+
 public struct ServerListView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppEnvironment.self) private var environment: AppEnvironment?
 
     private let customRepository: ServerRepositoryProtocol?
 
-    @State private var isPresentingAddSheet: Bool = false
-    @State private var serverToEdit: ServerConfig?
+    @State private var navigationPath: [ServerRoute] = []
     @State private var serverToDelete: ServerConfig?
     @State private var isShowingDeleteConfirmation: Bool = false
 
@@ -41,52 +45,65 @@ public struct ServerListView: View {
     }
 
     public var body: some View {
-        Group {
-            if servers.isEmpty {
-                emptyStateView
-            } else {
-                serverList
-            }
-        }
-        .navigationTitle("Servers")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    isPresentingAddSheet = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Add Server")
-            }
-        }
-        .sheet(isPresented: $isPresentingAddSheet) {
-            ServerEditView(repository: activeRepository) { newServer in
-                if let environment {
-                    environment.switchServer(to: newServer)
+        NavigationStack(path: $navigationPath) {
+            Group {
+                if servers.isEmpty {
+                    emptyStateView
                 } else {
-                    activeRepository.setActiveServer(id: newServer.id)
+                    serverList
                 }
             }
-        }
-        .sheet(item: $serverToEdit) { server in
-            ServerEditView(server: server, repository: activeRepository) { updatedServer in
-                if activeServerId == updatedServer.id {
-                    environment?.switchServer(to: updatedServer)
+            .navigationTitle("Servers")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel("Close")
+                }
+
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        navigationPath.append(.add)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add Server")
                 }
             }
-        }
-        .confirmationDialog(
-            "Delete Server?",
-            isPresented: $isShowingDeleteConfirmation,
-            titleVisibility: .visible,
-            presenting: serverToDelete
-        ) { server in
-            Button("Delete \"\(server.name)\"", role: .destructive) {
-                deleteServer(server)
+            .navigationDestination(for: ServerRoute.self) { route in
+                switch route {
+                case .add:
+                    ServerEditView(repository: activeRepository) { newServer in
+                        if let environment {
+                            environment.switchServer(to: newServer)
+                        } else {
+                            activeRepository.setActiveServer(id: newServer.id)
+                        }
+                    }
+                case .edit(let server):
+                    ServerEditView(server: server, repository: activeRepository) { updatedServer in
+                        if activeServerId == updatedServer.id {
+                            environment?.switchServer(to: updatedServer)
+                        }
+                    }
+                }
             }
-            Button("Cancel", role: .cancel) { }
-        } message: { server in
-            Text("Are you sure you want to delete server configuration \"\(server.name)\"?")
+            .confirmationDialog(
+                "Delete Server?",
+                isPresented: $isShowingDeleteConfirmation,
+                titleVisibility: .visible,
+                presenting: serverToDelete
+            ) { server in
+                Button("Delete \"\(server.name)\"", role: .destructive) {
+                    deleteServer(server)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: { server in
+                Text("Are you sure you want to delete server configuration \"\(server.name)\"?")
+            }
         }
     }
 
@@ -100,7 +117,7 @@ public struct ServerListView: View {
             Text("Add a Transmission server to remotely manage your downloads.")
         } actions: {
             Button {
-                isPresentingAddSheet = true
+                navigationPath.append(.add)
             } label: {
                 Text("Add First Server")
                     .fontWeight(.semibold)
@@ -130,7 +147,7 @@ public struct ServerListView: View {
                         .tint(.red)
 
                         Button {
-                            serverToEdit = server
+                            navigationPath.append(.edit(server))
                         } label: {
                             Label("Edit", systemImage: "pencil")
                         }
@@ -144,7 +161,7 @@ public struct ServerListView: View {
                         }
 
                         Button {
-                            serverToEdit = server
+                            navigationPath.append(.edit(server))
                         } label: {
                             Label("Edit", systemImage: "pencil")
                         }
@@ -211,15 +228,11 @@ public struct ServerListView: View {
 }
 
 #Preview("With Servers") {
-    NavigationStack {
-        ServerListView(
-            repository: ServerRepository()
-        )
-    }
+    ServerListView(
+        repository: ServerRepository()
+    )
 }
 
 #Preview("Empty State") {
-    NavigationStack {
-        ServerListView()
-    }
+    ServerListView()
 }

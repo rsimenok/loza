@@ -59,6 +59,9 @@ final class LozaUITests: XCTestCase {
         XCTAssertTrue(alpineRow.waitForExistence(timeout: 3))
 
         let searchField = app.searchFields.firstMatch
+        if !searchField.exists {
+            app.swipeDown()
+        }
         XCTAssertTrue(searchField.waitForExistence(timeout: 3), "Native search field must remain available post-navigation")
 
         // 5. Test swipe-to-delete: row MUST NOT disappear before user confirms in popover!

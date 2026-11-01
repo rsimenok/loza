@@ -140,29 +140,28 @@ struct TorrentDetailView: View {
 
     private var statusSection: some View {
         Section("Status") {
-            // Status badge and percentage
-            HStack {
-                Label(viewModel.torrent.status.localizedName, systemImage: viewModel.torrent.status.systemImageName)
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(viewModel.torrent.status.badgeColor.opacity(0.15))
-                    .foregroundStyle(viewModel.torrent.status.badgeColor)
-                    .clipShape(Capsule())
+            // Unified Status header & Progress bar
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label(viewModel.torrent.status.localizedName, systemImage: viewModel.torrent.status.systemImageName)
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(viewModel.torrent.status.badgeColor.opacity(0.15))
+                        .foregroundStyle(viewModel.torrent.status.badgeColor)
+                        .clipShape(Capsule())
 
-                Spacer()
+                    Spacer()
 
-                Text(viewModel.torrent.percentDoneString)
-                    .font(.title3.bold().monospacedDigit())
-            }
+                    Text(viewModel.torrent.percentDoneString)
+                        .font(.title3.bold().monospacedDigit())
+                }
 
-            // Progress bar
-            VStack(alignment: .leading, spacing: 4) {
                 ProgressView(value: min(1.0, max(0.0, viewModel.torrent.percentDone)))
                     .progressViewStyle(.linear)
-                    .tint(viewModel.torrent.status.badgeColor)
+                    .tint(progressTint)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
 
             // ETA
             LabeledContent {
@@ -359,6 +358,22 @@ struct TorrentDetailView: View {
             } label: {
                 Label("ID", systemImage: "number")
             }
+        }
+    }
+
+    private var progressTint: Color {
+        if viewModel.torrent.hasError {
+            return .red
+        }
+        switch viewModel.torrent.status {
+        case .seed, .seedWait:
+            return Color.seedingProgress
+        case .stopped:
+            return Color(.tertiaryLabel)
+        case .check, .checkWait:
+            return .orange
+        case .download, .downloadWait:
+            return Color.accentColor
         }
     }
 

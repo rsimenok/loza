@@ -97,4 +97,11 @@ struct PurchaseManagerTests {
         manager.setMockState(hasEverTipped: true, isSubscribed: true)
         #expect(manager.isSupporter == true)
     }
+
+    @Test @MainActor func testTipJarViewInstantiation() {
+        let viewDefault = TipJarView()
+        let viewPushed = TipJarView(showsDismissButton: false)
+        _ = viewDefault
+        _ = viewPushed
+    }
 }

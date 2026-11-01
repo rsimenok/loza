@@ -62,6 +62,16 @@ xcodebuild test -project Loza.xcodeproj -scheme Loza -destination 'platform=iOS 
 * Server passwords **must never be stored** in `UserDefaults` or plaintext.
 * Passwords must be stored exclusively in `KeychainService` via the Security Framework (`kSecClassGenericPassword`).
 
+### 3.6. Quality Assurance & Test Case Maintenance (`TEST_CASES.md`)
+* **Continuous Synchronization:** When adding a new feature, modifying UI/user flows, or fixing a bug, agents MUST inspect and update `/TEST_CASES.md`:
+  * Add new test cases following the `[TC-XXX-NNN]` convention for newly introduced behavior or edge cases.
+  * Update existing test cases if steps, preconditions, or expected results changed.
+  * Prune or mark deprecated test cases if functionality was removed.
+* **Commit Discipline (No Gratuitous Doc Commits):**
+  * **DO NOT** create standalone git commits solely for modifying documentation (`TEST_CASES.md`, specs, plans) during task execution.
+  * Keep documentation modifications in the local working directory and bundle them atomically with the final feature/fix commit (or leave them in the working tree unless explicitly instructed to commit).
+* **Pre-Completion QA Check:** Review the relevant `TC-*` test cases in `/TEST_CASES.md` as an indispensable verification checklist before completing any task.
+
 ---
 
 ## 4. Architecture & Project Layout

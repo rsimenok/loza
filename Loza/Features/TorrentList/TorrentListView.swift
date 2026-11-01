@@ -65,16 +65,7 @@ struct TorrentListView: View {
                 }
             }
             .sheet(isPresented: $isPresentingServerList) {
-                NavigationStack {
-                    ServerListView()
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Done") {
-                                    isPresentingServerList = false
-                                }
-                            }
-                        }
-                }
+                ServerListView()
             }
             .sheet(isPresented: $isPresentingAbout) {
                 NavigationStack {

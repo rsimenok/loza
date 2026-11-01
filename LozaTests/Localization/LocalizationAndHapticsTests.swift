@@ -56,7 +56,7 @@ struct LocalizationAndHapticsTests {
             "Torrents", "Details", "Servers", "Add Torrent", "Settings",
             "All", "Downloading", "Seeding", "Paused", "Errors",
             "Stopped", "Queued for Check", "Checking", "Queued for Download", "Queued for Seeding", "Queued", "Error",
-            "Start", "Pause", "Delete", "Save", "Cancel", "Test Connection", "Paste from Clipboard", "Choose .torrent File",
+            "Start", "Pause", "Delete", "Save", "Cancel", "Close", "Test Connection", "Paste from Clipboard", "Choose .torrent File",
             "Delete Torrent?", "Delete Torrent Only", "Delete Torrent and Data",
             "Server", "Security", "Authentication", "Diagnostics", "Trust Self-Signed Certificates",
             "No Servers", "No Server Selected", "No Torrents", "Search Torrents...",

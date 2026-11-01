@@ -149,10 +149,13 @@ public struct AddTorrentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
                     .disabled(viewModel.isSubmitting)
+                    .accessibilityLabel("Cancel")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -161,12 +164,14 @@ public struct AddTorrentView: View {
                     } label: {
                         if viewModel.isSubmitting {
                             ProgressView()
+                                .tint(.white)
                         } else {
-                            Text("Add")
-                                .bold()
+                            Image(systemName: "checkmark")
+                                .font(.body.bold())
                         }
                     }
                     .disabled(!viewModel.isValid || viewModel.isSubmitting || activeClient == nil)
+                    .accessibilityLabel("Add")
                 }
             }
             .fileImporter(
