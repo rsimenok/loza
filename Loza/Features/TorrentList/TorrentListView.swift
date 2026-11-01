@@ -20,7 +20,6 @@ struct TorrentListView: View {
     @State private var isPresentingAbout: Bool = false
     @State private var isPresentingTipJar: Bool = false
     @State private var isPresentingAddTorrent: Bool = false
-    @State private var filterBarHeight: CGFloat = 46
 
     init(
         viewModel: TorrentListViewModel,
@@ -235,20 +234,16 @@ struct TorrentListView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color(.systemGroupedBackground))
+        .searchable(
+            text: $viewModel.searchQuery,
+            prompt: "Search Torrents..."
+        )
 
         return Group {
             if #available(iOS 26.0, *) {
                 baseList
-                    .contentMargins(.top, filterBarHeight + 6, for: .scrollIndicators)
                     .safeAreaBar(edge: .top, spacing: 0) {
                         filterBar
-                            .onGeometryChange(for: CGFloat.self) { proxy in
-                                proxy.size.height
-                            } action: { newHeight in
-                                if newHeight > 0, abs(newHeight - filterBarHeight) > 0.5 {
-                                    filterBarHeight = newHeight
-                                }
-                            }
                     }
             } else {
                 baseList
@@ -261,10 +256,6 @@ struct TorrentListView: View {
                     }
             }
         }
-        .searchable(
-            text: $viewModel.searchQuery,
-            prompt: "Search Torrents..."
-        )
     }
 
     private var isPadOrMac: Bool {

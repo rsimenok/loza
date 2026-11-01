@@ -60,7 +60,7 @@ final class LozaUITests: XCTestCase {
 
         let searchField = app.searchFields.firstMatch
         if !searchField.exists {
-            app.swipeDown()
+            alpineRow.swipeDown()
         }
         XCTAssertTrue(searchField.waitForExistence(timeout: 3), "Native search field must remain available post-navigation")
 

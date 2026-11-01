@@ -120,6 +120,26 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
+### `[TC-SRV-007]` Password Visibility Toggle in Server Configuration
+- **Type / Priority:** `Regression`
+- **Preconditions:** `ServerEditView` presented (either via "Add Server" or "Edit Server").
+- **Steps:**
+  1. Navigate to the "Authentication" section in `ServerEditView`.
+  2. Tap in the Password field and type a password (e.g., `SecretPass123`).
+  3. Verify the characters are initially masked with dots and the trailing icon shows `eye` with accessibility label "Show Password".
+  4. Tap the `eye` icon button.
+  5. Verify the password text becomes visible (`SecretPass123`) and the trailing icon changes to `eye.slash` with accessibility label "Hide Password".
+  6. Verify the keyboard does not dismiss and cursor focus is retained in the password field.
+  7. Tap the `eye.slash` icon button again.
+  8. Verify the characters are masked once more and the icon toggles back to `eye`.
+  9. Tap "Test Connection" or "Save" and verify the password value is transmitted/saved accurately regardless of visible or masked state.
+- **Expected Result:**
+  - Password seamlessly switches between masked (`SecureField`) and plaintext (`TextField`) without data loss, keyboard flicker, or focus loss.
+  - VoiceOver correctly announces "Show Password" when masked and "Hide Password" when revealed across all 6 supported locales.
+  - Correct password is stored in Keychain on save.
+
+---
+
 ## 3. Torrent List & Filter Bar (`TC-LST`)
 
 ### `[TC-LST-001]` Initial List Fetch & Default Sorting

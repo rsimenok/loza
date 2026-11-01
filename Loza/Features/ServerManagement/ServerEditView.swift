@@ -17,6 +17,8 @@ public struct ServerEditView: View {
 
     @State private var saveErrorMessage: String?
     @State private var isShowingErrorAlert: Bool = false
+    @State private var isPasswordVisible: Bool = false
+    @FocusState private var isPasswordFieldFocused: Bool
 
     public init(
         viewModel: ServerEditViewModel,
@@ -124,8 +126,30 @@ public struct ServerEditView: View {
                 .autocorrectionDisabled()
                 .textContentType(.username)
 
-            SecureField("Password", text: $viewModel.password)
-                .textContentType(.password)
+            HStack {
+                if isPasswordVisible {
+                    TextField("Password", text: $viewModel.password)
+                        .textContentType(.password)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($isPasswordFieldFocused)
+                } else {
+                    SecureField("Password", text: $viewModel.password)
+                        .textContentType(.password)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($isPasswordFieldFocused)
+                }
+
+                Button {
+                    isPasswordVisible.toggle()
+                } label: {
+                    Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(isPasswordVisible ? String(localized: "Hide Password") : String(localized: "Show Password"))
+            }
         }
     }
 
