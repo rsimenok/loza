@@ -236,6 +236,8 @@ struct TorrentListView: View {
         .background(Color(.systemGroupedBackground))
         .searchable(
             text: $viewModel.searchQuery,
+            // tags makes conflict with search on lower iOS versions, but if I add this then we have issues with search on iOS 26+, probably I'll move tags to separate view
+//            placement: .navigationBarDrawer(displayMode: .always)
             prompt: "Search Torrents..."
         )
 

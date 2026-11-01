@@ -362,6 +362,20 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
+### `[TC-DET-007]` Tracker and Server Location Display
+- **Type / Priority:** `Smoke`
+- **Preconditions:** `TorrentDetailView` open for any active or completed torrent.
+- **Steps:**
+  1. Scroll down to the "Information" ("Інформація") section.
+  2. Inspect the "Tracker" ("Трекер") row.
+  3. Inspect the "Location" ("Розташування") row.
+- **Expected Result:**
+  - The Tracker row displays the clean host/domain of the primary announce URL (e.g. `toloka.to`), or `"—"` if none.
+  - The Location row displays the complete, non-truncated server filesystem path (`downloadDir/name`) formatted in monospaced font with text selection enabled.
+  - No copy button clutter is present on the location row.
+
+---
+
 ## 6. Add Torrent Flows (`TC-ADD`)
 
 ### `[TC-ADD-001]` Present Add Torrent Sheet
@@ -425,6 +439,24 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 - **Expected Result:**
   - Loza opens.
   - `AddTorrentView` is presented automatically with the magnet URL pre-filled.
+
+---
+
+### `[TC-ADD-006]` Custom Download Directory & History Suggestions
+- **Type / Priority:** `Smoke`
+- **Preconditions:** `AddTorrentView` open with an active server configured.
+- **Steps:**
+  1. Scroll to the "Download Location" ("Папка завантаження") section.
+  2. Tap into the "Default (Server Settings)" text field to focus it.
+  3. Enter a custom download path (e.g. `/downloads/movies`).
+  4. Submit the torrent with a valid link or file.
+  5. Open `AddTorrentView` again and tap on the "Download Location" text field.
+  6. Observe recent suggestions and tap the previously entered path.
+- **Expected Result:**
+  - When the field gains focus and history exists, previous paths are displayed as plain text items below the field without history icons.
+  - Tapping an item fills the text field and clears keyboard focus.
+  - Empty strings, whitespace, and placeholder strings (`"-"`, `"—"`) are never saved into history.
+  - History is isolated to the active server.
 
 ---
 

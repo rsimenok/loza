@@ -179,4 +179,70 @@ struct StorageTests {
         #expect(repo2.activeServerId == server.id)
         #expect(repo2.getPassword(for: server.id) == "securePass")
     }
+
+    // MARK: - DownloadDirectoryHistoryStore Tests
+
+    @Test func testDownloadDirectoryHistoryStoreDeduplicationAndOrder() {
+        let suiteName = "test_dir_history_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let store = DownloadDirectoryHistoryStore(userDefaults: defaults)
+        let serverId = UUID()
+
+        store.recordPath("/downloads/movies", forServerId: serverId)
+        store.recordPath("/downloads/series", forServerId: serverId)
+        store.recordPath("/downloads/movies", forServerId: serverId)
+
+        let paths = store.getRecentPaths(forServerId: serverId)
+        #expect(paths == ["/downloads/movies", "/downloads/series"])
+    }
+
+    @Test func testDownloadDirectoryHistoryStoreMaxEntriesCap() {
+        let suiteName = "test_dir_cap_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let store = DownloadDirectoryHistoryStore(userDefaults: defaults)
+        let serverId = UUID()
+
+        for i in 1...15 {
+            store.recordPath("/downloads/folder_\(i)", forServerId: serverId)
+        }
+
+        let paths = store.getRecentPaths(forServerId: serverId)
+        #expect(paths.count == 10)
+        #expect(paths.first == "/downloads/folder_15")
+        #expect(paths.last == "/downloads/folder_6")
+    }
+
+    @Test func testDownloadDirectoryHistoryStoreRejectsPlaceholdersAndEmpty() {
+        let suiteName = "test_dir_reject_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let store = DownloadDirectoryHistoryStore(userDefaults: defaults)
+        let serverId = UUID()
+
+        store.recordPath("", forServerId: serverId)
+        store.recordPath("   ", forServerId: serverId)
+        store.recordPath("-", forServerId: serverId)
+        store.recordPath("—", forServerId: serverId)
+        store.recordPath("--", forServerId: serverId)
+
+        let paths = store.getRecentPaths(forServerId: serverId)
+        #expect(paths.isEmpty)
+    }
+
+    @Test func testDownloadDirectoryHistoryStoreServerIsolationAndClear() {
+        let suiteName = "test_dir_iso_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let store = DownloadDirectoryHistoryStore(userDefaults: defaults)
+        let serverA = UUID()
+        let serverB = UUID()
+
+        store.recordPath("/downloads/serverA", forServerId: serverA)
+        store.recordPath("/downloads/serverB", forServerId: serverB)
+
+        #expect(store.getRecentPaths(forServerId: serverA) == ["/downloads/serverA"])
+        #expect(store.getRecentPaths(forServerId: serverB) == ["/downloads/serverB"])
+
+        store.clearHistory(forServerId: serverA)
+        #expect(store.getRecentPaths(forServerId: serverA).isEmpty)
+        #expect(store.getRecentPaths(forServerId: serverB) == ["/downloads/serverB"])
+    }
 }

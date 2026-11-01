@@ -163,6 +163,78 @@ struct ModelTests {
         #expect(!zeroSpeed.localizedCaseInsensitiveContains("нуль"))
     }
 
+    // MARK: - Torrent Tracker & Download Directory Tests
+
+    @Test func testTorrentTrackerAndDownloadDirDecoding() throws {
+        let json = """
+        {
+            "id": 101,
+            "name": "Beef (Season 1)",
+            "downloadDir": "/downloads/Series",
+            "trackers": [
+                {
+                    "id": 1,
+                    "announce": "https://toloka.to/announce",
+                    "tier": 0
+                },
+                {
+                    "id": 2,
+                    "announce": "udp://tracker.opentrackr.org:1337/announce",
+                    "tier": 1
+                }
+            ]
+        }
+        """.data(using: .utf8)!
+
+        let torrent = try JSONDecoder().decode(Torrent.self, from: json)
+        #expect(torrent.id == 101)
+        #expect(torrent.name == "Beef (Season 1)")
+        #expect(torrent.downloadDir == "/downloads/Series")
+        #expect(torrent.trackers.count == 2)
+        #expect(torrent.trackers[0].announce == "https://toloka.to/announce")
+        #expect(torrent.trackers[0].tier == 0)
+        #expect(torrent.primaryTrackerHost == "toloka.to")
+        #expect(torrent.fullDownloadPath == "/downloads/Series/Beef (Season 1)")
+    }
+
+    @Test func testTorrentPrimaryTrackerHostVariations() {
+        // UDP announce
+        let udpTracker = TorrentTracker(id: 1, announce: "udp://tracker.opentrackr.org:1337/announce")
+        let udpTorrent = Torrent(id: 1, name: "Test", trackers: [udpTracker])
+        #expect(udpTorrent.primaryTrackerHost == "tracker.opentrackr.org")
+
+        // HTTPS announce
+        let httpsTracker = TorrentTracker(id: 2, announce: "https://nyaa.si:443/announce")
+        let httpsTorrent = Torrent(id: 2, name: "Test", trackers: [httpsTracker])
+        #expect(httpsTorrent.primaryTrackerHost == "nyaa.si")
+
+        // Empty trackers
+        let emptyTorrent = Torrent(id: 3, name: "Test", trackers: [])
+        #expect(emptyTorrent.primaryTrackerHost == nil)
+
+        // Whitespace only announce
+        let blankTracker = TorrentTracker(id: 4, announce: "   ")
+        let blankTorrent = Torrent(id: 4, name: "Test", trackers: [blankTracker])
+        #expect(blankTorrent.primaryTrackerHost == nil)
+    }
+
+    @Test func testTorrentFullDownloadPathFormatting() {
+        // Normal path without trailing slash
+        let normal = Torrent(id: 1, name: "Movie.mkv", downloadDir: "/volume1/downloads")
+        #expect(normal.fullDownloadPath == "/volume1/downloads/Movie.mkv")
+
+        // Trailing slash normalized
+        let trailing = Torrent(id: 2, name: "Movie.mkv", downloadDir: "/volume1/downloads/")
+        #expect(trailing.fullDownloadPath == "/volume1/downloads/Movie.mkv")
+
+        // Nil or empty downloadDir
+        let nilDir = Torrent(id: 3, name: "Movie.mkv", downloadDir: nil)
+        #expect(nilDir.fullDownloadPath == nil)
+
+        let emptyDir = Torrent(id: 4, name: "Movie.mkv", downloadDir: "   ")
+        #expect(emptyDir.fullDownloadPath == nil)
+    }
+
     // MARK: - SessionStats Tests
 
     @Test func testSessionStatsDecoding() throws {

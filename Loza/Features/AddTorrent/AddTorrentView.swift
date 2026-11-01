@@ -15,6 +15,7 @@ public struct AddTorrentView: View {
 
     @State private var viewModel: AddTorrentViewModel
     @State private var isFileImporterPresented: Bool = false
+    @FocusState private var isLocationFocused: Bool
 
     private let client: TransmissionClientProtocol?
     private let onSuccess: (() -> Void)?
@@ -140,6 +141,28 @@ public struct AddTorrentView: View {
                     }
                 }
 
+                // Download Location
+                Section("Download Location") {
+                    TextField("Default (Server Settings)", text: $viewModel.downloadDir)
+                        .focused($isLocationFocused)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+
+                    if isLocationFocused && !viewModel.recentPaths.isEmpty {
+                        ForEach(viewModel.recentPaths, id: \.self) { path in
+                            Button {
+                                viewModel.downloadDir = path
+                                isLocationFocused = false
+                            } label: {
+                                Text(path)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
                 // Options
                 Section("Parameters") {
                     Toggle("Start Immediately", isOn: $viewModel.startImmediately)
@@ -188,6 +211,9 @@ public struct AddTorrentView: View {
                     viewModel.errorMessage = String(localized: "File selection error: \(error.localizedDescription)")
                 }
             }
+            .onAppear {
+                viewModel.loadRecentPaths(serverId: environment?.activeServer?.id)
+            }
         }
     }
 
@@ -207,8 +233,9 @@ public struct AddTorrentView: View {
 
         HapticManager.shared.impact(.medium)
 
+        let activeServerId = environment?.activeServer?.id
         Task {
-            let success = await viewModel.submit(client: client)
+            let success = await viewModel.submit(client: client, serverId: activeServerId)
             if success {
                 HapticManager.shared.torrentAdded()
                 dismiss()

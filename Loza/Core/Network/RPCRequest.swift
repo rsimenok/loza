@@ -61,7 +61,7 @@ nonisolated public struct TorrentGetArguments: Encodable, Sendable, Equatable {
         "percentDone", "totalSize", "eta", "errorString",
         "peersConnected", "peersSendingToUs", "peersGettingFromUs",
         "uploadedEver", "downloadedEver", "uploadRatio", "files",
-        "hashString", "addedDate"
+        "hashString", "addedDate", "downloadDir", "trackers"
     ]
 
     public init(fields: [String] = TorrentGetArguments.defaultFields, ids: [Int]? = nil) {

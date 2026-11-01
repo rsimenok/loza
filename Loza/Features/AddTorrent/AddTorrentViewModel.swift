@@ -18,9 +18,13 @@ public final class AddTorrentViewModel {
     public var selectedFileData: Data?
     public var selectedFileName: String?
     public var startImmediately: Bool
+    public var downloadDir: String
+    public var recentPaths: [String]
     public var isSubmitting: Bool
     public var errorMessage: String?
     public var isSuccess: Bool
+
+    private let historyStore: DownloadDirectoryHistoryStore
 
     // MARK: - Validation
 
@@ -37,15 +41,29 @@ public final class AddTorrentViewModel {
         initialMagnetOrUrl: String? = nil,
         selectedFileData: Data? = nil,
         selectedFileName: String? = nil,
-        startImmediately: Bool = true
+        startImmediately: Bool = true,
+        downloadDir: String = "",
+        historyStore: DownloadDirectoryHistoryStore = DownloadDirectoryHistoryStore()
     ) {
         self.magnetOrUrl = initialMagnetOrUrl ?? ""
         self.selectedFileData = selectedFileData
         self.selectedFileName = selectedFileName
         self.startImmediately = startImmediately
+        self.downloadDir = downloadDir
+        self.recentPaths = []
+        self.historyStore = historyStore
         self.isSubmitting = false
         self.errorMessage = nil
         self.isSuccess = false
+    }
+
+    /// Loads recently used download directories for the specified server.
+    public func loadRecentPaths(serverId: UUID?) {
+        guard let serverId else {
+            recentPaths = []
+            return
+        }
+        recentPaths = historyStore.getRecentPaths(forServerId: serverId)
     }
 
     // MARK: - Clipboard & File Handling
@@ -87,7 +105,7 @@ public final class AddTorrentViewModel {
     // MARK: - Submission
 
     /// Submits the torrent to the specified Transmission client.
-    public func submit(client: TransmissionClientProtocol) async -> Bool {
+    public func submit(client: TransmissionClientProtocol, serverId: UUID? = nil) async -> Bool {
         guard isValid else {
             self.errorMessage = "Введіть посилання або виберіть файл торрента"
             return false
@@ -102,13 +120,19 @@ public final class AddTorrentViewModel {
         let base64Param = selectedFileData?.base64EncodedString()
         let paused = !startImmediately
 
+        let trimmedDir = downloadDir.trimmingCharacters(in: .whitespacesAndNewlines)
+        let dirParam = trimmedDir.isEmpty ? nil : trimmedDir
+
         do {
             try await client.addTorrent(
                 magnetOrUrl: linkParam,
                 base64Metainfo: base64Param,
-                downloadDir: nil,
+                downloadDir: dirParam,
                 paused: paused
             )
+            if let dirParam, let serverId {
+                historyStore.recordPath(dirParam, forServerId: serverId)
+            }
             self.isSuccess = true
             return true
         } catch {

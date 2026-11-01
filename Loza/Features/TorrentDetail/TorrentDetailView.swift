@@ -347,6 +347,24 @@ struct TorrentDetailView: View {
             .padding(.vertical, 2)
 
             LabeledContent {
+                Text(viewModel.torrent.primaryTrackerHost ?? "—")
+                    .textSelection(.enabled)
+            } label: {
+                Label("Tracker", systemImage: "globe")
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Label("Location", systemImage: "folder")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(viewModel.torrent.fullDownloadPath ?? "—")
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.vertical, 2)
+
+            LabeledContent {
                 Text(viewModel.torrent.formattedAddedDate)
             } label: {
                 Label("Date Added", systemImage: "calendar")

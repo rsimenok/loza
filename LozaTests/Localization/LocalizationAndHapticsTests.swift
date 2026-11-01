@@ -66,7 +66,8 @@ struct LocalizationAndHapticsTests {
             "About", "Free and open-source utility for remote management of your Transmission daemon.",
             "Project", "Source Code on GitHub", "Third-Party Software", "Version %@ (%@)",
             "Support Loza", "Tip Jar", "Supporter", "Restore Purchases", "Loza Supporter Club", "Monthly Supporter", "One-Time Tips", "Thank You!",
-            "Show Password", "Hide Password"
+            "Show Password", "Hide Password",
+            "Tracker", "Location", "Download Location", "Default (Server Settings)"
         ]
 
         for key in requiredKeys {

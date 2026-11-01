@@ -7,6 +7,24 @@
 
 import Foundation
 
+nonisolated public struct TorrentTracker: Identifiable, Codable, Sendable, Equatable, Hashable {
+    public var id: Int
+    public var announce: String
+    public var tier: Int?
+
+    public init(id: Int, announce: String, tier: Int? = nil) {
+        self.id = id
+        self.announce = announce
+        self.tier = tier
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case announce
+        case tier
+    }
+}
+
 nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, Hashable {
     public var id: Int
     public var name: String
@@ -26,6 +44,8 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
     public var files: [TorrentFile]
     public var hashString: String
     public var addedDate: Date?
+    public var downloadDir: String?
+    public var trackers: [TorrentTracker]
 
     public init(
         id: Int,
@@ -45,7 +65,9 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         uploadRatio: Double = 0.0,
         files: [TorrentFile] = [],
         hashString: String = "",
-        addedDate: Date? = nil
+        addedDate: Date? = nil,
+        downloadDir: String? = nil,
+        trackers: [TorrentTracker] = []
     ) {
         self.id = id
         self.name = name
@@ -65,6 +87,8 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         self.files = files
         self.hashString = hashString
         self.addedDate = addedDate
+        self.downloadDir = downloadDir
+        self.trackers = trackers
     }
 
     enum CodingKeys: String, CodingKey {
@@ -86,6 +110,8 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         case files
         case hashString
         case addedDate
+        case downloadDir
+        case trackers
     }
 
     public init(from decoder: Decoder) throws {
@@ -122,6 +148,9 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         } else {
             self.files = []
         }
+
+        self.downloadDir = try container.decodeIfPresent(String.self, forKey: .downloadDir)
+        self.trackers = try container.decodeIfPresent([TorrentTracker].self, forKey: .trackers) ?? []
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -146,9 +175,34 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         if let addedDate = addedDate {
             try container.encode(addedDate.timeIntervalSince1970, forKey: .addedDate)
         }
+        try container.encodeIfPresent(downloadDir, forKey: .downloadDir)
+        try container.encode(trackers, forKey: .trackers)
     }
 
     // MARK: - Computed Properties & Formatters
+
+    /// Primary tracker host extracted from announce URL (e.g. "toloka.to" or "nyaa.si")
+    public var primaryTrackerHost: String? {
+        guard let firstTracker = trackers.first(where: { !$0.announce.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else {
+            return nil
+        }
+        let announce = firstTracker.announce.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let url = URL(string: announce), let host = url.host, !host.isEmpty {
+            return host
+        }
+        if let components = URLComponents(string: announce), let host = components.host, !host.isEmpty {
+            return host
+        }
+        return announce
+    }
+
+    /// Full filesystem path on the remote server combining `downloadDir` and `name`
+    public var fullDownloadPath: String? {
+        guard let downloadDir = downloadDir?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !downloadDir.isEmpty else { return nil }
+        let cleanedDir = downloadDir.hasSuffix("/") ? String(downloadDir.dropLast()) : downloadDir
+        return "\(cleanedDir)/\(name)"
+    }
 
     /// Whether there is an active error message
     public var hasError: Bool {

@@ -179,4 +179,44 @@ final class AddTorrentViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.errorMessage)
         XCTAssertFalse(vm.isSubmitting)
     }
+
+    // MARK: - Download Directory & History Tests
+
+    func testSubmitWithCustomDownloadDirSavesToHistory() async {
+        let suiteName = "test_add_dir_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let historyStore = DownloadDirectoryHistoryStore(userDefaults: defaults)
+        let serverId = UUID()
+
+        let vm = AddTorrentViewModel(
+            initialMagnetOrUrl: "magnet:?xt=urn:btih:1234567890&dn=CustomDir.iso",
+            downloadDir: "  /downloads/custom/  ",
+            historyStore: historyStore
+        )
+
+        let success = await vm.submit(client: mockClient, serverId: serverId)
+
+        XCTAssertTrue(success)
+        XCTAssertTrue(vm.isSuccess)
+        let recent = historyStore.getRecentPaths(forServerId: serverId)
+        XCTAssertEqual(recent, ["/downloads/custom/"])
+    }
+
+    func testLoadRecentPathsForServer() async {
+        let suiteName = "test_load_dir_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let historyStore = DownloadDirectoryHistoryStore(userDefaults: defaults)
+        let serverId = UUID()
+        historyStore.recordPath("/downloads/series", forServerId: serverId)
+        historyStore.recordPath("/downloads/movies", forServerId: serverId)
+
+        let vm = AddTorrentViewModel(historyStore: historyStore)
+        XCTAssertTrue(vm.recentPaths.isEmpty)
+
+        vm.loadRecentPaths(serverId: serverId)
+        XCTAssertEqual(vm.recentPaths, ["/downloads/movies", "/downloads/series"])
+
+        vm.loadRecentPaths(serverId: nil)
+        XCTAssertTrue(vm.recentPaths.isEmpty)
+    }
 }
