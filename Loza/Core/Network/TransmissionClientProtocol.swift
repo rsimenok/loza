@@ -35,6 +35,9 @@ public protocol TransmissionClientProtocol: Sendable {
 
     /// Add a new torrent with optional paused status.
     func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?) async throws
+
+    /// Add a new torrent with optional paused status and tags/labels.
+    func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?, labels: [String]?) async throws
 }
 
 extension TransmissionClientProtocol {
@@ -43,6 +46,14 @@ extension TransmissionClientProtocol {
     }
 
     public func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?) async throws {
-        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: nil)
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: nil, labels: nil)
+    }
+
+    public func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?) async throws {
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: paused, labels: nil)
+    }
+
+    public func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?, labels: [String]?) async throws {
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: paused)
     }
 }

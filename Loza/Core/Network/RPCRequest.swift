@@ -118,17 +118,20 @@ nonisolated public struct TorrentAddArguments: Encodable, Sendable, Equatable {
     public let metainfo: String?
     public let downloadDir: String?
     public let paused: Bool?
+    public let labels: [String]?
 
     public init(
         filename: String? = nil,
         metainfo: String? = nil,
         downloadDir: String? = nil,
-        paused: Bool? = nil
+        paused: Bool? = nil,
+        labels: [String]? = nil
     ) {
         self.filename = filename
         self.metainfo = metainfo
         self.downloadDir = downloadDir
         self.paused = paused
+        self.labels = labels
     }
 
     enum CodingKeys: String, CodingKey {
@@ -136,5 +139,6 @@ nonisolated public struct TorrentAddArguments: Encodable, Sendable, Equatable {
         case metainfo
         case downloadDir = "download-dir"
         case paused
+        case labels
     }
 }

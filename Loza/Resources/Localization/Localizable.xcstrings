@@ -612,6 +612,47 @@
         }
       }
     },
+    "Add tag..." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag hinzufügen..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add tag..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir etiqueta..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une étiquette..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj tag..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додати тег..."
+          }
+        }
+      }
+    },
     "Add Torrent" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4992,6 +5033,9 @@
         }
       }
     },
+    "Remove tag %@" : {
+
+    },
     "Reset Filters" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6259,6 +6303,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Підписка поновлюється автоматично, якщо автопоновлення не вимкнено принаймні за 24 години до завершення поточного періоду. Оплата списується з вашого облікового запису Apple ID під час підтвердження покупки. Ви можете керувати підписками та скасовувати їх у налаштуваннях свого облікового запису App Store."
+          }
+        }
+      }
+    },
+    "Suggested Tags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorgeschlagene Tags"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested Tags"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiquetas sugeridas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Étiquettes suggérées"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerowane tagi"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропоновані теги"
           }
         }
       }

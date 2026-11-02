@@ -488,6 +488,42 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
+### `[TC-ADD-007]` Adding Torrent with Custom and Comma-Separated Tags
+- **Type / Priority:** `Smoke`
+- **Preconditions:** `AddTorrentView` open with a valid magnet URL or file.
+- **Steps:**
+  1. Scroll to the "Tags" section.
+  2. Type `linux` and tap Return or type a comma `,`.
+  3. Observe that `linux` is converted into a capsule chip `[ linux ✕ ]` and the input field clears.
+  4. Paste or type `isos, distros, 2026, ` into the tag input.
+  5. Enter `uncommitted` without trailing comma or Return.
+  6. Tap Add (trailing confirmation checkmark).
+- **Expected Result:**
+  - Comma-separated input parses into discrete capsules `[ isos ✕ ]`, `[ distros ✕ ]`, and `[ 2026 ✕ ]`.
+  - Whitespace-only entries are discarded.
+  - Duplicate tags (case-insensitive) are ignored.
+  - The uncommitted text `uncommitted` is automatically committed into `tags` before dispatch.
+  - The Transmission RPC request `torrent-add` includes `"labels": ["linux", "isos", "distros", "2026", "uncommitted"]`.
+
+---
+
+### `[TC-ADD-008]` Tag Suggestions and Removal in Add Torrent Modal
+- **Type / Priority:** `Regression`
+- **Preconditions:** `AddTorrentView` open, active server has existing tags (e.g. `movies`, `music`, `series`).
+- **Steps:**
+  1. Scroll to the "Tags" section and inspect "Suggested Tags".
+  2. Tap `+ movies` in the suggestions row.
+  3. Verify `movies` moves to the added tags row as `[ movies ✕ ]` and disappears from "Suggested Tags".
+  4. Type `ser` in the tag input field.
+  5. Verify "Suggested Tags" dynamically filters to show only `+ series`.
+  6. Tap the `✕` button on `[ movies ✕ ]`.
+- **Expected Result:**
+  - Tapping a suggestion immediately adds it to active tags and provides tactile haptic feedback.
+  - Suggestions filter dynamically matching the current search substring.
+  - Tapping `✕` removes the tag capsule immediately and restores it to available suggestions.
+
+---
+
 ## 7. In-App Purchases / Tip Jar & Subscriptions (`TC-PUR`)
 
 ### `[TC-PUR-001]` StoreKit 2 Products Loading & Push Navigation from About

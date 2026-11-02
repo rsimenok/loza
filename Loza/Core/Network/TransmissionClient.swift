@@ -156,7 +156,7 @@ public final class TransmissionClient: TransmissionClientProtocol, @unchecked Se
         base64Metainfo: String?,
         downloadDir: String?
     ) async throws {
-        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: nil)
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: nil, labels: nil)
     }
 
     public func addTorrent(
@@ -164,6 +164,16 @@ public final class TransmissionClient: TransmissionClientProtocol, @unchecked Se
         base64Metainfo: String?,
         downloadDir: String?,
         paused: Bool?
+    ) async throws {
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: paused, labels: nil)
+    }
+
+    public func addTorrent(
+        magnetOrUrl: String?,
+        base64Metainfo: String?,
+        downloadDir: String?,
+        paused: Bool?,
+        labels: [String]?
     ) async throws {
         let (session, config) = try getActiveSessionAndConfig()
         guard let url = config.url else {
@@ -178,7 +188,8 @@ public final class TransmissionClient: TransmissionClientProtocol, @unchecked Se
                 filename: magnetOrUrl,
                 metainfo: base64Metainfo,
                 downloadDir: downloadDir,
-                paused: paused
+                paused: paused,
+                labels: labels
             )
         )
     }

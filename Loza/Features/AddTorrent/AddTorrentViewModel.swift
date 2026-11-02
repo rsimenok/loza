@@ -20,6 +20,9 @@ public final class AddTorrentViewModel {
     public var startImmediately: Bool
     public var downloadDir: String
     public var recentPaths: [String]
+    var tags: [String]
+    var tagInput: String
+    var availableServerTags: [String]
     public var isSubmitting: Bool
     public var errorMessage: String?
     public var isSuccess: Bool
@@ -43,6 +46,8 @@ public final class AddTorrentViewModel {
         selectedFileName: String? = nil,
         startImmediately: Bool = true,
         downloadDir: String = "",
+        tags: [String] = [],
+        availableServerTags: [String] = [],
         historyStore: DownloadDirectoryHistoryStore = DownloadDirectoryHistoryStore()
     ) {
         self.magnetOrUrl = initialMagnetOrUrl ?? ""
@@ -51,6 +56,9 @@ public final class AddTorrentViewModel {
         self.startImmediately = startImmediately
         self.downloadDir = downloadDir
         self.recentPaths = []
+        self.tags = tags
+        self.tagInput = ""
+        self.availableServerTags = availableServerTags
         self.historyStore = historyStore
         self.isSubmitting = false
         self.errorMessage = nil
@@ -102,6 +110,47 @@ public final class AddTorrentViewModel {
         self.selectedFileName = nil
     }
 
+    // MARK: - Tag Management
+
+    /// Adds a tag, trimming whitespace, ignoring empty strings and case-insensitive duplicates.
+    func addTag(_ rawTag: String) {
+        let trimmed = rawTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if !tags.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+            tags.append(trimmed)
+        }
+    }
+
+    /// Removes a tag by exact value.
+    func removeTag(_ tag: String) {
+        tags.removeAll { $0 == tag }
+    }
+
+    /// Commits the current buffer in `tagInput`, splitting by comma and trimming.
+    func commitCurrentTagInput() {
+        let raw = tagInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else {
+            tagInput = ""
+            return
+        }
+        let parts = raw.components(separatedBy: ",")
+        for part in parts {
+            addTag(part)
+        }
+        tagInput = ""
+    }
+
+    /// Returns available server tags not yet added, filtered by current `tagInput`.
+    func filteredSuggestions() -> [String] {
+        let currentLower = Set(tags.map { $0.lowercased() })
+        let unselected = availableServerTags.filter { !currentLower.contains($0.lowercased()) }
+        let query = tagInput.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if query.isEmpty {
+            return unselected
+        }
+        return unselected.filter { $0.lowercased().contains(query) }
+    }
+
     // MARK: - Submission
 
     /// Submits the torrent to the specified Transmission client.
@@ -110,6 +159,8 @@ public final class AddTorrentViewModel {
             self.errorMessage = "Введіть посилання або виберіть файл торрента"
             return false
         }
+
+        commitCurrentTagInput()
 
         isSubmitting = true
         errorMessage = nil
@@ -122,13 +173,15 @@ public final class AddTorrentViewModel {
 
         let trimmedDir = downloadDir.trimmingCharacters(in: .whitespacesAndNewlines)
         let dirParam = trimmedDir.isEmpty ? nil : trimmedDir
+        let labelsParam = tags.isEmpty ? nil : tags
 
         do {
             try await client.addTorrent(
                 magnetOrUrl: linkParam,
                 base64Metainfo: base64Param,
                 downloadDir: dirParam,
-                paused: paused
+                paused: paused,
+                labels: labelsParam
             )
             if let dirParam, let serverId {
                 historyStore.recordPath(dirParam, forServerId: serverId)

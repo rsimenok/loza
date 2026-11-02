@@ -68,7 +68,8 @@ struct LocalizationAndHapticsTests {
             "Support Loza", "Tip Jar", "Supporter", "Restore Purchases", "Loza Supporter Club", "Monthly Supporter", "One-Time Tips", "Thank You!",
             "Show Password", "Hide Password",
             "Tracker", "Location", "Download Location", "Default (Server Settings)",
-            "Reset Filters", "Tags", "Trackers", "Filters", "No Torrents Found", "No torrents match the selected filters."
+            "Reset Filters", "Tags", "Trackers", "Filters", "No Torrents Found", "No torrents match the selected filters.",
+            "Add tag...", "Suggested Tags"
         ]
 
         for key in requiredKeys {

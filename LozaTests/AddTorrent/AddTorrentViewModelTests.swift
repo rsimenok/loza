@@ -219,4 +219,61 @@ final class AddTorrentViewModelTests: XCTestCase {
         vm.loadRecentPaths(serverId: nil)
         XCTAssertTrue(vm.recentPaths.isEmpty)
     }
+
+    // MARK: - Tag Management Tests
+
+    func testTagAdditionAndDeduplication() async {
+        let vm = AddTorrentViewModel()
+        vm.addTag("linux")
+        vm.addTag("  LINUX  ") // duplicate case-insensitive
+        vm.addTag("   ") // empty
+        vm.addTag("iso")
+
+        XCTAssertEqual(vm.tags, ["linux", "iso"])
+    }
+
+    func testTagCommaSeparatedParsing() async {
+        let vm = AddTorrentViewModel()
+        vm.tagInput = "debian, ubuntu, arch, "
+        vm.commitCurrentTagInput()
+
+        XCTAssertEqual(vm.tags, ["debian", "ubuntu", "arch"])
+        XCTAssertEqual(vm.tagInput, "")
+    }
+
+    func testTagRemoval() async {
+        let vm = AddTorrentViewModel()
+        vm.addTag("alpha")
+        vm.addTag("beta")
+        vm.removeTag("alpha")
+
+        XCTAssertEqual(vm.tags, ["beta"])
+    }
+
+    func testFilteredSuggestions() async {
+        let vm = AddTorrentViewModel()
+        vm.availableServerTags = ["distro", "debian", "media", "documents"]
+        vm.addTag("distro")
+
+        // Empty input: shows available tags except already added
+        XCTAssertEqual(vm.filteredSuggestions(), ["debian", "media", "documents"])
+
+        // Filtered by input "de"
+        vm.tagInput = "de"
+        XCTAssertEqual(vm.filteredSuggestions(), ["debian"])
+    }
+
+    func testSubmitWithTags() async throws {
+        let vm = AddTorrentViewModel(initialMagnetOrUrl: "magnet:?xt=urn:btih:abcdef1234567890&dn=LinuxDistro")
+        vm.addTag("linux")
+        vm.tagInput = "uncommitted" // Should commit on submit
+
+        let success = await vm.submit(client: mockClient)
+        XCTAssertTrue(success)
+
+        let torrents = try await mockClient.fetchTorrents()
+        let added = torrents.first { $0.name == "LinuxDistro" }
+        XCTAssertNotNil(added)
+        XCTAssertEqual(added?.labels, ["linux", "uncommitted"])
+    }
 }

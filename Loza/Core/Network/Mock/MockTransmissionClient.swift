@@ -253,7 +253,7 @@ public final class MockTransmissionClient: TransmissionClientProtocol, @unchecke
         base64Metainfo: String?,
         downloadDir: String?
     ) async throws {
-        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: nil)
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: nil, labels: nil)
     }
 
     public func addTorrent(
@@ -261,6 +261,16 @@ public final class MockTransmissionClient: TransmissionClientProtocol, @unchecke
         base64Metainfo: String?,
         downloadDir: String?,
         paused: Bool?
+    ) async throws {
+        try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: paused, labels: nil)
+    }
+
+    public func addTorrent(
+        magnetOrUrl: String?,
+        base64Metainfo: String?,
+        downloadDir: String?,
+        paused: Bool?,
+        labels: [String]?
     ) async throws {
         try await simulateDelay()
         stateLock.withLock { torrents in
@@ -320,7 +330,8 @@ public final class MockTransmissionClient: TransmissionClientProtocol, @unchecke
                     )
                 ],
                 hashString: hashString,
-                addedDate: Date()
+                addedDate: Date(),
+                labels: labels ?? []
             )
 
             torrents.append(newTorrent)

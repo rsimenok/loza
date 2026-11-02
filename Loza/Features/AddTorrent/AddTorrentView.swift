@@ -22,10 +22,11 @@ public struct AddTorrentView: View {
 
     public init(
         initialMagnetOrUrl: String? = nil,
+        availableServerTags: [String] = [],
         client: TransmissionClientProtocol? = nil,
         onSuccess: (() -> Void)? = nil
     ) {
-        self._viewModel = State(wrappedValue: AddTorrentViewModel(initialMagnetOrUrl: initialMagnetOrUrl))
+        self._viewModel = State(wrappedValue: AddTorrentViewModel(initialMagnetOrUrl: initialMagnetOrUrl, availableServerTags: availableServerTags))
         self.client = client
         self.onSuccess = onSuccess
     }
@@ -168,6 +169,71 @@ public struct AddTorrentView: View {
                     }
                 }
 
+                // Tags
+                Section("Tags") {
+                    if !viewModel.tags.isEmpty {
+                        tagCapsulesView
+                    }
+
+                    HStack {
+                        TextField("Add tag...", text: $viewModel.tagInput)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .onSubmit {
+                                viewModel.commitCurrentTagInput()
+                            }
+                            .onChange(of: viewModel.tagInput) { _, newValue in
+                                if newValue.contains(",") {
+                                    viewModel.commitCurrentTagInput()
+                                }
+                            }
+
+                        if !viewModel.tagInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Button {
+                                HapticManager.shared.impact(.light)
+                                viewModel.commitCurrentTagInput()
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+
+                    let suggestions = viewModel.filteredSuggestions()
+                    if !suggestions.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Suggested Tags")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .textCase(.uppercase)
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 6) {
+                                    ForEach(suggestions, id: \.self) { suggestion in
+                                        Button {
+                                            HapticManager.shared.impact(.light)
+                                            viewModel.addTag(suggestion)
+                                        } label: {
+                                            HStack(spacing: 4) {
+                                                Image(systemName: "plus")
+                                                    .font(.caption2)
+                                                Text(suggestion)
+                                                    .font(.subheadline)
+                                            }
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(Color(.secondarySystemFill), in: Capsule())
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+
                 // Options
                 Section("Parameters") {
                     Toggle("Start Immediately", isOn: $viewModel.startImmediately)
@@ -220,6 +286,35 @@ public struct AddTorrentView: View {
                 viewModel.loadRecentPaths(serverId: environment?.activeServer?.id)
             }
         }
+    }
+
+    private var tagCapsulesView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(viewModel.tags, id: \.self) { tag in
+                    HStack(spacing: 6) {
+                        Text(tag)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+
+                        Button {
+                            HapticManager.shared.impact(.light)
+                            viewModel.removeTag(tag)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("Remove tag \(tag)")
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.accentColor.opacity(0.15), in: Capsule())
+                }
+            }
+        }
+        .padding(.vertical, 2)
     }
 
     private var torrentContentTypes: [UTType] {

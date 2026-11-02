@@ -279,4 +279,28 @@ struct ModelTests {
         #expect(stats.formattedSpeedSummary.contains("↓"))
         #expect(stats.formattedSpeedSummary.contains("↑"))
     }
+
+    // MARK: - TorrentAddArguments Tests
+
+    @Test func testTorrentAddArgumentsWithLabelsEncoding() throws {
+        let args = TorrentAddArguments(
+            filename: "magnet:?xt=urn:btih:test",
+            labels: ["linux", "distro"]
+        )
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(args)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+        #expect(json?["filename"] as? String == "magnet:?xt=urn:btih:test")
+        #expect(json?["labels"] as? [String] == ["linux", "distro"])
+    }
+
+    @Test func testTorrentAddArgumentsNilLabelsEncoding() throws {
+        let args = TorrentAddArguments(filename: "magnet:?xt=urn:btih:test", labels: nil)
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(args)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+        #expect(json?["labels"] == nil)
+    }
 }

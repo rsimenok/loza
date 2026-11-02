@@ -91,7 +91,10 @@ struct TorrentListView: View {
                     }
                 }
             )) {
-                AddTorrentView(initialMagnetOrUrl: environment?.pendingMagnetURL) {
+                AddTorrentView(
+                    initialMagnetOrUrl: environment?.pendingMagnetURL,
+                    availableServerTags: viewModel.availableTags
+                ) {
                     isPresentingAddTorrent = false
                     environment?.showAddTorrentSheet = false
                     environment?.pendingMagnetURL = nil
