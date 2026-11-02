@@ -46,6 +46,7 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
     public var addedDate: Date?
     public var downloadDir: String?
     public var trackers: [TorrentTracker]
+    public var labels: [String]
 
     public init(
         id: Int,
@@ -67,7 +68,8 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         hashString: String = "",
         addedDate: Date? = nil,
         downloadDir: String? = nil,
-        trackers: [TorrentTracker] = []
+        trackers: [TorrentTracker] = [],
+        labels: [String] = []
     ) {
         self.id = id
         self.name = name
@@ -89,6 +91,7 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         self.addedDate = addedDate
         self.downloadDir = downloadDir
         self.trackers = trackers
+        self.labels = labels
     }
 
     enum CodingKeys: String, CodingKey {
@@ -112,6 +115,7 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         case addedDate
         case downloadDir
         case trackers
+        case labels
     }
 
     public init(from decoder: Decoder) throws {
@@ -151,6 +155,7 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
 
         self.downloadDir = try container.decodeIfPresent(String.self, forKey: .downloadDir)
         self.trackers = try container.decodeIfPresent([TorrentTracker].self, forKey: .trackers) ?? []
+        self.labels = try container.decodeIfPresent([String].self, forKey: .labels) ?? []
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -177,9 +182,27 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
         }
         try container.encodeIfPresent(downloadDir, forKey: .downloadDir)
         try container.encode(trackers, forKey: .trackers)
+        try container.encode(labels, forKey: .labels)
     }
 
     // MARK: - Computed Properties & Formatters
+
+    /// All tracker hostnames extracted from all announce URLs and primaryTrackerHost
+    public var trackerHosts: Set<String> {
+        var hosts = Set<String>()
+        for tracker in trackers {
+            let announce = tracker.announce.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let url = URL(string: announce), let host = url.host, !host.isEmpty {
+                hosts.insert(host)
+            } else if let components = URLComponents(string: announce), let host = components.host, !host.isEmpty {
+                hosts.insert(host)
+            }
+        }
+        if let primary = primaryTrackerHost {
+            hosts.insert(primary)
+        }
+        return hosts
+    }
 
     /// Primary tracker host extracted from announce URL (e.g. "toloka.to" or "nyaa.si")
     public var primaryTrackerHost: String? {

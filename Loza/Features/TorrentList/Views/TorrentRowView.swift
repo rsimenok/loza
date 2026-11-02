@@ -117,22 +117,20 @@ struct TorrentRowView: View {
 
     @ViewBuilder
     private var customProgressBar: some View {
-        GeometryReader { proxy in
-            let progress = min(1.0, max(0.0, torrent.percentDone))
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color(.tertiarySystemFill))
-                    .frame(height: 4)
-
-                if progress > 0 {
-                    Capsule()
-                        .fill(progressTint)
-                        .frame(width: max(4, proxy.size.width * CGFloat(progress)), height: 4)
+        let progress = min(1.0, max(0.0, torrent.percentDone))
+        Capsule()
+            .fill(Color(.tertiarySystemFill))
+            .frame(height: 4)
+            .overlay(alignment: .leading) {
+                GeometryReader { proxy in
+                    if progress > 0 {
+                        Capsule()
+                            .fill(progressTint)
+                            .frame(width: max(4, proxy.size.width * CGFloat(progress)), height: 4)
+                    }
                 }
             }
-        }
-        .frame(height: 4)
-        .allowsHitTesting(false)
+            .allowsHitTesting(false)
     }
 
     @ViewBuilder

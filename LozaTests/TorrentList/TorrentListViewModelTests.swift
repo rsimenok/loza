@@ -21,7 +21,9 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateDownload: 4_500_000,
                 rateUpload: 120_000,
                 percentDone: 0.5,
-                totalSize: 6_000_000_000
+                totalSize: 6_000_000_000,
+                trackers: [TorrentTracker(id: 1, announce: "https://torrent.ubuntu.com/announce")],
+                labels: ["OS", "Linux"]
             ),
             Torrent(
                 id: 2,
@@ -30,7 +32,9 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateDownload: 0,
                 rateUpload: 0,
                 percentDone: 0.1,
-                totalSize: 700_000_000
+                totalSize: 700_000_000,
+                trackers: [TorrentTracker(id: 2, announce: "http://bttracker.debian.org:6969/announce")],
+                labels: ["OS", "Linux"]
             ),
             Torrent(
                 id: 3,
@@ -39,7 +43,9 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateDownload: 0,
                 rateUpload: 1_200_000,
                 percentDone: 1.0,
-                totalSize: 2_000_000_000
+                totalSize: 2_000_000_000,
+                trackers: [TorrentTracker(id: 3, announce: "https://torrent.fedoraproject.org/announce")],
+                labels: ["OS"]
             ),
             Torrent(
                 id: 4,
@@ -48,7 +54,9 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateDownload: 0,
                 rateUpload: 0,
                 percentDone: 1.0,
-                totalSize: 1_500_000_000
+                totalSize: 1_500_000_000,
+                trackers: [TorrentTracker(id: 4, announce: "https://torrent.ubuntu.com/announce")],
+                labels: ["Server"]
             ),
             Torrent(
                 id: 5,
@@ -57,7 +65,9 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateDownload: 0,
                 rateUpload: 0,
                 percentDone: 0.35,
-                totalSize: 1_100_000_000
+                totalSize: 1_100_000_000,
+                trackers: [TorrentTracker(id: 5, announce: "https://archlinux.org/announce")],
+                labels: ["Linux"]
             ),
             Torrent(
                 id: 6,
@@ -67,7 +77,9 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateUpload: 0,
                 percentDone: 0.2,
                 totalSize: 300_000_000,
-                errorString: "Tracker returned 404"
+                errorString: "Tracker returned 404",
+                trackers: [],
+                labels: ["Apps"]
             ),
             Torrent(
                 id: 7,
@@ -76,19 +88,22 @@ final class TorrentListViewModelTests: XCTestCase {
                 rateDownload: 0,
                 rateUpload: 0,
                 percentDone: 0.05,
-                totalSize: 200_000_000
+                totalSize: 200_000_000,
+                trackers: [TorrentTracker(id: 7, announce: "https://alpine.org/announce")],
+                labels: []
             )
         ]
     }
 
     // MARK: - Filter Tests
 
-    func testFilterAll() {
+    func testFilterImplicitAll() {
         let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
         let vm = TorrentListViewModel(client: mock)
         vm.torrents = makeSampleTorrents()
-        vm.selectedFilter = .all
+        vm.selectedStatuses = []
 
+        XCTAssertFalse(vm.hasActiveFilters)
         XCTAssertEqual(vm.filteredTorrents.count, 7)
         XCTAssertEqual(vm.filteredTorrents.map(\.id), [7, 5, 4, 2, 3, 6, 1])
     }
@@ -111,17 +126,28 @@ final class TorrentListViewModelTests: XCTestCase {
         let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
         let vm = TorrentListViewModel(client: mock)
         vm.torrents = makeSampleTorrents()
-        vm.selectedFilter = .downloading
+        vm.selectedStatuses = [.downloading]
 
+        XCTAssertTrue(vm.hasActiveFilters)
         let ids = vm.filteredTorrents.map(\.id)
         XCTAssertEqual(ids, [2, 1])
+    }
+
+    func testFilterMultipleStatuses() {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        vm.torrents = makeSampleTorrents()
+        vm.selectedStatuses = [.downloading, .seeding]
+
+        let ids = vm.filteredTorrents.map(\.id)
+        XCTAssertEqual(ids, [4, 2, 3, 1])
     }
 
     func testFilterSeeding() {
         let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
         let vm = TorrentListViewModel(client: mock)
         vm.torrents = makeSampleTorrents()
-        vm.selectedFilter = .seeding
+        vm.selectedStatuses = [.seeding]
 
         let ids = vm.filteredTorrents.map(\.id)
         XCTAssertEqual(ids, [4, 3])
@@ -131,7 +157,7 @@ final class TorrentListViewModelTests: XCTestCase {
         let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
         let vm = TorrentListViewModel(client: mock)
         vm.torrents = makeSampleTorrents()
-        vm.selectedFilter = .paused
+        vm.selectedStatuses = [.paused]
 
         let ids = vm.filteredTorrents.map(\.id)
         XCTAssertEqual(ids, [5, 6])
@@ -141,10 +167,75 @@ final class TorrentListViewModelTests: XCTestCase {
         let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
         let vm = TorrentListViewModel(client: mock)
         vm.torrents = makeSampleTorrents()
-        vm.selectedFilter = .error
+        vm.selectedStatuses = [.error]
 
         let ids = vm.filteredTorrents.map(\.id)
         XCTAssertEqual(ids, [6])
+    }
+
+    func testFilterTags() {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        vm.torrents = makeSampleTorrents()
+
+        XCTAssertEqual(vm.availableTags, ["Apps", "Linux", "OS", "Server"])
+
+        // Single tag: Server
+        vm.selectedTags = ["Server"]
+        XCTAssertEqual(vm.filteredTorrents.map(\.id), [4])
+
+        // Multiple tags: OS or Apps
+        vm.selectedTags = ["OS", "Apps"]
+        XCTAssertEqual(vm.filteredTorrents.map(\.id), [2, 3, 6, 1])
+    }
+
+    func testFilterTrackers() {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        vm.torrents = makeSampleTorrents()
+
+        XCTAssertTrue(vm.availableTrackers.contains("torrent.ubuntu.com"))
+        XCTAssertTrue(vm.availableTrackers.contains("bttracker.debian.org"))
+
+        // Single tracker
+        vm.selectedTrackers = ["bttracker.debian.org"]
+        XCTAssertEqual(vm.filteredTorrents.map(\.id), [2])
+
+        // Multiple trackers
+        vm.selectedTrackers = ["bttracker.debian.org", "torrent.fedoraproject.org"]
+        XCTAssertEqual(vm.filteredTorrents.map(\.id), [2, 3])
+    }
+
+    func testCompoundFiltering() {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        vm.torrents = makeSampleTorrents()
+
+        // Status: Downloading AND Tag: Linux AND Tracker: torrent.ubuntu.com
+        vm.selectedStatuses = [.downloading]
+        vm.selectedTags = ["Linux"]
+        vm.selectedTrackers = ["torrent.ubuntu.com"]
+
+        XCTAssertEqual(vm.filteredTorrents.map(\.id), [1])
+    }
+
+    func testResetFilters() {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        vm.torrents = makeSampleTorrents()
+
+        vm.selectedStatuses = [.downloading]
+        vm.selectedTags = ["Linux"]
+        vm.selectedTrackers = ["torrent.ubuntu.com"]
+        XCTAssertTrue(vm.hasActiveFilters)
+
+        vm.resetFilters()
+
+        XCTAssertFalse(vm.hasActiveFilters)
+        XCTAssertTrue(vm.selectedStatuses.isEmpty)
+        XCTAssertTrue(vm.selectedTags.isEmpty)
+        XCTAssertTrue(vm.selectedTrackers.isEmpty)
+        XCTAssertEqual(vm.filteredTorrents.count, 7)
     }
 
     // MARK: - Search Query Tests
@@ -167,7 +258,7 @@ final class TorrentListViewModelTests: XCTestCase {
         XCTAssertEqual(vm.filteredTorrents.map(\.id), [2])
 
         // 4. Combined with category filter
-        vm.selectedFilter = .downloading
+        vm.selectedStatuses = [.downloading]
         vm.searchQuery = "debian"
         XCTAssertEqual(vm.filteredTorrents.map(\.id), [2])
 
@@ -186,11 +277,16 @@ final class TorrentListViewModelTests: XCTestCase {
         let vm = TorrentListViewModel(client: mock)
         vm.torrents = makeSampleTorrents()
 
-        XCTAssertEqual(vm.count(for: .all), 7)
-        XCTAssertEqual(vm.count(for: .downloading), 2)
-        XCTAssertEqual(vm.count(for: .seeding), 2)
-        XCTAssertEqual(vm.count(for: .paused), 2)
-        XCTAssertEqual(vm.count(for: .error), 1)
+        XCTAssertEqual(vm.count(forStatus: .downloading), 2)
+        XCTAssertEqual(vm.count(forStatus: .seeding), 2)
+        XCTAssertEqual(vm.count(forStatus: .paused), 2)
+        XCTAssertEqual(vm.count(forStatus: .error), 1)
+
+        XCTAssertEqual(vm.count(forTag: "OS"), 3)
+        XCTAssertEqual(vm.count(forTag: "Linux"), 3)
+        XCTAssertEqual(vm.count(forTag: "Server"), 1)
+
+        XCTAssertEqual(vm.count(forTracker: "torrent.ubuntu.com"), 2)
     }
 
     // MARK: - ScenePhase Polling Tests

@@ -8,7 +8,7 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 * **Identifiers:** `TC-<MODULE>-<NUMBER>`
   * `TC-SRV-*` — Server Management
-  * `TC-LST-*` — Torrent List & Filter Bar
+  * `TC-LST-*` — Torrent List & Toolbar Filters
   * `TC-ACT-*` — Torrent Operations & Actions
   * `TC-DET-*` — Torrent Detail Screen
   * `TC-ADD-*` — Add Torrent Flows
@@ -140,7 +140,7 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
-## 3. Torrent List & Filter Bar (`TC-LST`)
+## 3. Torrent List & Toolbar Filters (`TC-LST`)
 
 ### `[TC-LST-001]` Initial List Fetch & Default Sorting
 - **Type / Priority:** `Smoke`
@@ -155,18 +155,18 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
-### `[TC-LST-002]` Status Filter Chips
+### `[TC-LST-002]` Toolbar Filter Menu & Multi-Select Statuses
 - **Type / Priority:** `Smoke`
 - **Preconditions:** Connected server with downloading, seeding, paused, and finished torrents.
 - **Steps:**
-  1. Observe the horizontal filter bar below the navigation bar (`All`, `Downloading`, `Seeding`, `Paused`, `Active`, `Error`).
-  2. Tap `Downloading`: verify only torrents with status `.downloading` appear.
-  3. Tap `Seeding`: verify only seeding torrents appear.
-  4. Tap `Paused`: verify only stopped torrents appear.
-  5. Tap `All`: all torrents return.
+  1. Observe the filter button in the navigation bar (`line.3.horizontal.decrease`) directly to the left of the `+` button.
+  2. Tap the filter button: verify a popover appears with `Reset Filters`, `Status`, `Tags` (if available), and `Trackers` (if available), with a reserved leading slot for checkmarks and trailing item counters.
+  3. Tap `Downloading`: verify a primary white checkmark appears in the leading slot and only torrents with status `.downloading` appear, while the popover remains open.
+  4. Tap `Seeding`: verify both downloading and seeding torrents appear (multi-select OR logic).
+  5. Tap `Reset Filters`: verify all filters clear, toolbar icon returns to default `line.3.horizontal.decrease`, and all torrents return.
 - **Expected Result:**
-  - Selected filter chip has prominent visual selection styling.
-  - List filters instantaneously using local state without blocking network requests.
+  - When filters are active, toolbar icon is highlighted as `line.3.horizontal.decrease.circle.fill` in accent color.
+  - Selections update instantaneously using local state without blocking network requests.
 
 ---
 
@@ -210,15 +210,43 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
-### `[TC-LST-006]` Vertical Scroll Indicator Inset & Alignment
+### `[TC-LST-006]` Vertical Scroll Indicator Inset & Full Height Viewport
 - **Type / Priority:** `Regression`
 - **Preconditions:** Torrent list populated with more torrents than fit on screen.
 - **Steps:**
   1. On `TorrentListView`, scroll the list vertically.
-  2. Observe the right-edge vertical scroll indicator.
+  2. Observe the right-edge vertical scroll indicator and top content inset.
 - **Expected Result:**
-  - The vertical scroll indicator starts directly below the horizontal filter bar without extra artificial vertical offsets.
+  - The list content and vertical scroll indicator start seamlessly at the top navigation bar boundary without any awkward blank space or obsolete filter bar insets.
   - The scroll indicator moves smoothly from top to bottom across the visible list viewport.
+
+---
+
+### `[TC-LST-007]` Multi-Select Compound Filtering (Status, Tags & Trackers)
+- **Type / Priority:** `Smoke`
+- **Preconditions:** Active server with torrents having different statuses, tags, and trackers.
+- **Steps:**
+  1. Open the filter menu.
+  2. Check a status (e.g. `Downloading`).
+  3. Check a tag (e.g. `Linux`) and a tracker (e.g. `torrent.ubuntu.com`).
+  4. Dismiss the menu.
+- **Expected Result:**
+  - Only torrents matching all three conditions (Status AND Tag AND Tracker) are displayed.
+  - If multiple tags or multiple trackers are checked, OR logic applies within that group.
+  - Navigation bar filter icon displays the active state (`line.3.horizontal.decrease.circle.fill`).
+
+---
+
+### `[TC-LST-008]` Empty Filter Results State & Inline Reset
+- **Type / Priority:** `Regression`
+- **Preconditions:** Active server with torrents.
+- **Steps:**
+  1. Open filter menu and select filter combinations that yield 0 matches.
+  2. Observe the main list screen.
+  3. Tap the "Reset Filters" button in the empty state view.
+- **Expected Result:**
+  - `ContentUnavailableView` appears showing "No Torrents Found" and "No torrents match the selected filters." with a "Reset Filters" action button.
+  - Tapping "Reset Filters" clears all selected filters and immediately restores the complete torrent list.
 
 ---
 

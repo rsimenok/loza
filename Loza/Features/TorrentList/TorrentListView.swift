@@ -20,6 +20,7 @@ struct TorrentListView: View {
     @State private var isPresentingAbout: Bool = false
     @State private var isPresentingTipJar: Bool = false
     @State private var isPresentingAddTorrent: Bool = false
+    @State private var isShowingFilters: Bool = false
 
     init(
         viewModel: TorrentListViewModel,
@@ -55,12 +56,16 @@ struct TorrentListView: View {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isPresentingAddTorrent = true
-                    } label: {
-                        Image(systemName: "plus")
+                    HStack(spacing: 12) {
+                        filterButton
+
+                        Button {
+                            isPresentingAddTorrent = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .accessibilityLabel("Add Torrent")
                     }
-                    .accessibilityLabel("Add Torrent")
                 }
             }
             .sheet(isPresented: $isPresentingServerList) {
@@ -146,7 +151,7 @@ struct TorrentListView: View {
     }
 
     private var torrentList: some View {
-        let baseList = List {
+        List {
             if let error = viewModel.errorMessage {
                 errorBanner(message: error)
                     .listRowInsets(EdgeInsets())
@@ -177,87 +182,74 @@ struct TorrentListView: View {
                         .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        .confirmationDialog(
-                            "Delete Torrent?",
-                            isPresented: deleteConfirmationBinding(for: torrent),
-                            titleVisibility: .visible
-                        ) {
-                            Button("Delete Torrent Only", role: .destructive) {
-                                HapticManager.shared.torrentDeleted()
-                                if selectedTorrentId == torrent.id {
-                                    selectedTorrentId = nil
-                                }
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                HapticManager.shared.torrentStateToggled()
                                 Task {
-                                    await viewModel.deleteTorrent(id: torrent.id, deleteLocalData: false)
+                                    await viewModel.toggleTorrentState(torrent: torrent)
                                 }
+                            } label: {
+                                Label(
+                                    torrent.status.isRunning ? "Pause" : "Start",
+                                    systemImage: torrent.status.isRunning ? "pause.fill" : "play.fill"
+                                )
                             }
-                            Button("Delete Torrent and Data", role: .destructive) {
-                                HapticManager.shared.torrentDeleted()
-                                if selectedTorrentId == torrent.id {
-                                    selectedTorrentId = nil
-                                }
-                                Task {
-                                    await viewModel.deleteTorrent(id: torrent.id, deleteLocalData: true)
-                                }
-                            }
-                            Button("Cancel", role: .cancel) {
-                                viewModel.torrentToDelete = nil
-                            }
-                        } message: {
-                            Text("Are you sure you want to delete \"\(torrent.name)\"?")
+                            .tint(torrent.status.isRunning ? .orange : .green)
                         }
-                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        Button {
-                            HapticManager.shared.torrentStateToggled()
-                            Task {
-                                await viewModel.toggleTorrentState(torrent: torrent)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button {
+                                viewModel.confirmDelete(for: torrent)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
-                        } label: {
-                            Label(
-                                torrent.status.isRunning ? "Pause" : "Start",
-                                systemImage: torrent.status.isRunning ? "pause.fill" : "play.fill"
-                            )
+                            .tint(.red)
                         }
-                        .tint(torrent.status.isRunning ? .orange : .green)
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button {
-                            viewModel.confirmDelete(for: torrent)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                        .tint(.red)
-                    }
                 }
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color(.systemGroupedBackground))
-        .searchable(
-            text: $viewModel.searchQuery,
-            // tags makes conflict with search on lower iOS versions, but if I add this then we have issues with search on iOS 26+, probably I'll move tags to separate view
-//            placement: .navigationBarDrawer(displayMode: .always)
-            prompt: "Search Torrents..."
-        )
-
-        return Group {
-            if #available(iOS 26.0, *) {
-                baseList
-                    .safeAreaBar(edge: .top, spacing: 0) {
-                        filterBar
+        .transaction { transaction in
+            transaction.animation = nil
+        }
+        .confirmationDialog(
+            "Delete Torrent?",
+            isPresented: $viewModel.showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            if let torrent = viewModel.torrentToDelete {
+                Button("Delete Torrent Only", role: .destructive) {
+                    HapticManager.shared.torrentDeleted()
+                    if selectedTorrentId == torrent.id {
+                        selectedTorrentId = nil
                     }
-            } else {
-                baseList
-                    .safeAreaInset(edge: .top, spacing: 0) {
-                        VStack(spacing: 0) {
-                            filterBar
-                            Divider()
-                        }
-                        .background(.bar)
+                    Task {
+                        await viewModel.deleteTorrent(id: torrent.id, deleteLocalData: false)
                     }
+                }
+                Button("Delete Torrent and Data", role: .destructive) {
+                    HapticManager.shared.torrentDeleted()
+                    if selectedTorrentId == torrent.id {
+                        selectedTorrentId = nil
+                    }
+                    Task {
+                        await viewModel.deleteTorrent(id: torrent.id, deleteLocalData: true)
+                    }
+                }
+                Button("Cancel", role: .cancel) {
+                    viewModel.torrentToDelete = nil
+                }
+            }
+        } message: {
+            if let torrent = viewModel.torrentToDelete {
+                Text("Are you sure you want to delete \"\(torrent.name)\"?")
             }
         }
+        .searchable(
+            text: $viewModel.searchQuery,
+            prompt: "Search Torrents..."
+        )
     }
 
     private var isPadOrMac: Bool {
@@ -318,26 +310,18 @@ struct TorrentListView: View {
         }
     }
 
-    private var filterBar: some View {
-        FilterBarView(selectedFilter: $viewModel.selectedFilter) { filter in
-            viewModel.count(for: filter)
+    private var filterButton: some View {
+        Button {
+            isShowingFilters.toggle()
+        } label: {
+            Image(systemName: viewModel.hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
+                .foregroundStyle(viewModel.hasActiveFilters ? Color.accentColor : Color.primary)
         }
-    }
-
-    private func deleteConfirmationBinding(for torrent: Torrent) -> Binding<Bool> {
-        Binding(
-            get: {
-                viewModel.showDeleteConfirmation && viewModel.torrentToDelete?.id == torrent.id
-            },
-            set: { isPresented in
-                if !isPresented {
-                    viewModel.showDeleteConfirmation = false
-                    if viewModel.torrentToDelete?.id == torrent.id {
-                        viewModel.torrentToDelete = nil
-                    }
-                }
-            }
-        )
+        .accessibilityLabel("Filters")
+        .popover(isPresented: $isShowingFilters) {
+            FilterPopoverView(viewModel: viewModel)
+                .presentationCompactAdaptation(.popover)
+        }
     }
 
     private var serverSelectionMenu: some View {
@@ -454,11 +438,17 @@ struct TorrentListView: View {
     private var emptyFilterView: some View {
         if !viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             ContentUnavailableView.search(text: viewModel.searchQuery)
-        } else if viewModel.selectedFilter != .all {
+        } else if viewModel.hasActiveFilters {
             ContentUnavailableView {
-                Label("No Items", systemImage: viewModel.selectedFilter.systemImage)
+                Label("No Torrents Found", systemImage: "line.3.horizontal.decrease.circle")
             } description: {
-                Text("There are currently no torrents in \"\(viewModel.selectedFilter.title)\" category.")
+                Text("No torrents match the selected filters.")
+            } actions: {
+                Button("Reset Filters") {
+                    HapticManager.shared.filterSelected()
+                    viewModel.resetFilters()
+                }
+                .buttonStyle(.bordered)
             }
         } else {
             ContentUnavailableView {

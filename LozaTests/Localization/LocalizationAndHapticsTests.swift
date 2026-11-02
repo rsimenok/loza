@@ -67,7 +67,8 @@ struct LocalizationAndHapticsTests {
             "Project", "Source Code on GitHub", "Third-Party Software", "Version %@ (%@)",
             "Support Loza", "Tip Jar", "Supporter", "Restore Purchases", "Loza Supporter Club", "Monthly Supporter", "One-Time Tips", "Thank You!",
             "Show Password", "Hide Password",
-            "Tracker", "Location", "Download Location", "Default (Server Settings)"
+            "Tracker", "Location", "Download Location", "Default (Server Settings)",
+            "Reset Filters", "Tags", "Trackers", "Filters", "No Torrents Found", "No torrents match the selected filters."
         ]
 
         for key in requiredKeys {

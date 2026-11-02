@@ -18,7 +18,9 @@ final class TorrentListViewModel {
     var sessionStats: SessionStats?
     var isLoading: Bool = false
     var errorMessage: String?
-    var selectedFilter: TorrentFilter = .all
+    var selectedStatuses: Set<TorrentStatusCategory> = []
+    var selectedTags: Set<String> = []
+    var selectedTrackers: Set<String> = []
     var searchQuery: String = ""
     var torrentToDelete: Torrent?
     var showDeleteConfirmation: Bool = false
@@ -60,14 +62,44 @@ final class TorrentListViewModel {
 
     // MARK: - Computed Properties
 
-    /// Filtered list of torrents based on selectedFilter and searchQuery, sorted by name.
+    /// Indicates whether any filter is currently applied.
+    var hasActiveFilters: Bool {
+        !selectedStatuses.isEmpty || !selectedTags.isEmpty || !selectedTrackers.isEmpty
+    }
+
+    /// Unique, non-empty, sorted tags collected from all loaded torrents.
+    var availableTags: [String] {
+        let allTags = torrents
+            .flatMap { $0.labels }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return Array(Set(allTags)).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    /// Unique, non-empty, sorted tracker hostnames collected from all loaded torrents.
+    var availableTrackers: [String] {
+        let allTrackers = torrents
+            .flatMap { $0.trackerHosts }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return Array(Set(allTrackers)).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    /// Filtered list of torrents based on selectedStatuses, selectedTags, selectedTrackers, and searchQuery, sorted by name.
     var filteredTorrents: [Torrent] {
-        let filter = selectedFilter
         let trimmedQuery = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return torrents
             .filter { torrent in
-                guard filter.matches(torrent) else { return false }
+                let matchesStatus = selectedStatuses.isEmpty || selectedStatuses.contains { $0.matches(torrent) }
+                guard matchesStatus else { return false }
+
+                let matchesTags = selectedTags.isEmpty || !Set(torrent.labels).isDisjoint(with: selectedTags)
+                guard matchesTags else { return false }
+
+                let matchesTrackers = selectedTrackers.isEmpty || !torrent.trackerHosts.isDisjoint(with: selectedTrackers)
+                guard matchesTrackers else { return false }
+
                 if !trimmedQuery.isEmpty {
                     return torrent.name.localizedCaseInsensitiveContains(trimmedQuery)
                 }
@@ -82,9 +114,55 @@ final class TorrentListViewModel {
             }
     }
 
-    /// Returns the number of torrents matching the given filter.
-    func count(for filter: TorrentFilter) -> Int {
-        torrents.filter { filter.matches($0) }.count
+    /// Returns the number of torrents matching the given status category.
+    func count(forStatus status: TorrentStatusCategory) -> Int {
+        torrents.filter { status.matches($0) }.count
+    }
+
+    /// Returns the number of torrents containing the given tag.
+    func count(forTag tag: String) -> Int {
+        torrents.filter { $0.labels.contains(tag) }.count
+    }
+
+    /// Returns the number of torrents associated with the given tracker hostname.
+    func count(forTracker tracker: String) -> Int {
+        torrents.filter { $0.trackerHosts.contains(tracker) }.count
+    }
+
+    // MARK: - Filter Actions
+
+    /// Toggles selection of a status category.
+    func toggleStatus(_ status: TorrentStatusCategory) {
+        if selectedStatuses.contains(status) {
+            selectedStatuses.remove(status)
+        } else {
+            selectedStatuses.insert(status)
+        }
+    }
+
+    /// Toggles selection of a tag.
+    func toggleTag(_ tag: String) {
+        if selectedTags.contains(tag) {
+            selectedTags.remove(tag)
+        } else {
+            selectedTags.insert(tag)
+        }
+    }
+
+    /// Toggles selection of a tracker hostname.
+    func toggleTracker(_ tracker: String) {
+        if selectedTrackers.contains(tracker) {
+            selectedTrackers.remove(tracker)
+        } else {
+            selectedTrackers.insert(tracker)
+        }
+    }
+
+    /// Resets all status, tag, and tracker filters.
+    func resetFilters() {
+        selectedStatuses.removeAll()
+        selectedTags.removeAll()
+        selectedTrackers.removeAll()
     }
 
     // MARK: - Polling Management
@@ -165,8 +243,14 @@ final class TorrentListViewModel {
                 }
             }
 
-            if self.torrents != newTorrents {
+            if self.torrents.count != newTorrents.count || self.torrents.map(\.id) != newTorrents.map(\.id) {
                 self.torrents = newTorrents
+            } else {
+                for index in newTorrents.indices {
+                    if self.torrents[index] != newTorrents[index] {
+                        self.torrents[index] = newTorrents[index]
+                    }
+                }
             }
             if self.sessionStats != newStats {
                 self.sessionStats = newStats
@@ -189,6 +273,7 @@ final class TorrentListViewModel {
         torrents = []
         sessionStats = nil
         errorMessage = nil
+        resetFilters()
         Task {
             await refresh()
         }

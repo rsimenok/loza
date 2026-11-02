@@ -235,6 +235,25 @@ struct ModelTests {
         #expect(emptyDir.fullDownloadPath == nil)
     }
 
+    @Test func testTorrentLabelsAndTrackerHostsDecoding() throws {
+        let json = """
+        {
+            "id": 10,
+            "name": "Big Buck Bunny",
+            "labels": ["Animation", "OpenSource"],
+            "trackers": [
+                { "id": 1, "announce": "udp://tracker.openbittorrent.com:80/announce" },
+                { "id": 2, "announce": "https://torrent.ubuntu.com/announce" }
+            ]
+        }
+        """.data(using: .utf8)!
+
+        let torrent = try JSONDecoder().decode(Torrent.self, from: json)
+        #expect(torrent.labels == ["Animation", "OpenSource"])
+        #expect(torrent.trackerHosts.contains("tracker.openbittorrent.com"))
+        #expect(torrent.trackerHosts.contains("torrent.ubuntu.com"))
+    }
+
     // MARK: - SessionStats Tests
 
     @Test func testSessionStatsDecoding() throws {

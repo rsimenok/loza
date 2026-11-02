@@ -53,8 +53,6 @@ public struct SpeedIndicatorView: View {
             }
         }
         .fixedSize(horizontal: true, vertical: false)
-        .animation(.snappy(duration: 0.25), value: downloadSpeed)
-        .animation(.snappy(duration: 0.25), value: uploadSpeed)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(String(localized: "Speed: download \(Torrent.formatSpeed(downloadSpeed)), upload \(Torrent.formatSpeed(uploadSpeed))"))
     }

@@ -7,20 +7,17 @@
 
 import Foundation
 
-/// Filter categories for categorizing and displaying torrent lists.
-public enum TorrentFilter: String, CaseIterable, Identifiable, Sendable {
-    case all
+/// Status filter categories for categorizing and displaying torrent lists.
+enum TorrentStatusCategory: String, CaseIterable, Identifiable, Sendable {
     case downloading
     case seeding
     case paused
     case error
 
-    public var id: String { rawValue }
+    var id: String { rawValue }
 
-    public var title: String {
+    var title: String {
         switch self {
-        case .all:
-            return String(localized: "All")
         case .downloading:
             return String(localized: "Downloading")
         case .seeding:
@@ -32,10 +29,8 @@ public enum TorrentFilter: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    public var systemImage: String {
+    var systemImage: String {
         switch self {
-        case .all:
-            return "tray.full"
         case .downloading:
             return "arrow.down.circle"
         case .seeding:
@@ -47,11 +42,9 @@ public enum TorrentFilter: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// Evaluates if a given torrent matches this filter category.
-    public func matches(_ torrent: Torrent) -> Bool {
+    /// Evaluates if a given torrent matches this status category.
+    func matches(_ torrent: Torrent) -> Bool {
         switch self {
-        case .all:
-            return true
         case .downloading:
             return torrent.status.isDownloading
         case .seeding:
@@ -63,3 +56,5 @@ public enum TorrentFilter: String, CaseIterable, Identifiable, Sendable {
         }
     }
 }
+
+typealias TorrentFilter = TorrentStatusCategory
