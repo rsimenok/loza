@@ -194,6 +194,20 @@ public final class TransmissionClient: TransmissionClientProtocol, @unchecked Se
         )
     }
 
+    public func setTorrentLabels(ids: [Int], labels: [String]) async throws {
+        let (session, config) = try getActiveSessionAndConfig()
+        guard let url = config.url else {
+            throw TransmissionError.invalidURL
+        }
+
+        let _: EmptyResponse = try await execute(
+            session: session,
+            url: url,
+            method: "torrent-set",
+            arguments: TorrentSetArguments(ids: ids, labels: labels)
+        )
+    }
+
     // MARK: - Private Helpers
 
     private func getActiveSessionAndConfig() throws -> (session: Session, config: ServerConfig) {

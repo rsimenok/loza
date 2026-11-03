@@ -38,6 +38,9 @@ public protocol TransmissionClientProtocol: Sendable {
 
     /// Add a new torrent with optional paused status and tags/labels.
     func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?, labels: [String]?) async throws
+
+    /// Update metadata properties (such as labels) on torrents with the specified IDs.
+    func setTorrentLabels(ids: [Int], labels: [String]) async throws
 }
 
 extension TransmissionClientProtocol {
@@ -55,5 +58,9 @@ extension TransmissionClientProtocol {
 
     public func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?, labels: [String]?) async throws {
         try await addTorrent(magnetOrUrl: magnetOrUrl, base64Metainfo: base64Metainfo, downloadDir: downloadDir, paused: paused)
+    }
+
+    public func setTorrentLabels(id: Int, labels: [String]) async throws {
+        try await setTorrentLabels(ids: [id], labels: labels)
     }
 }

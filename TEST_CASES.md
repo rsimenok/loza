@@ -163,10 +163,11 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   2. Tap the filter button: verify a popover appears with `Reset Filters`, `Status`, `Tags` (if available), and `Trackers` (if available), with a reserved leading slot for checkmarks and trailing item counters.
   3. Tap `Downloading`: verify a primary white checkmark appears in the leading slot and only torrents with status `.downloading` appear, while the popover remains open.
   4. Tap `Seeding`: verify both downloading and seeding torrents appear (multi-select OR logic).
-  5. Tap `Reset Filters`: verify all filters clear, toolbar icon returns to default `line.3.horizontal.decrease`, and all torrents return.
+  5. Tap `Reset Filters`: verify all filters clear, the filter popover is automatically dismissed, toolbar icon returns to default `line.3.horizontal.decrease`, and all torrents return.
 - **Expected Result:**
   - When filters are active, toolbar icon is highlighted as `line.3.horizontal.decrease.circle.fill` in accent color.
   - Selections update instantaneously using local state without blocking network requests.
+  - Tapping `Reset Filters` clears active filters and dismisses the popover.
 
 ---
 
@@ -247,6 +248,20 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 - **Expected Result:**
   - `ContentUnavailableView` appears showing "No Torrents Found" and "No torrents match the selected filters." with a "Reset Filters" action button.
   - Tapping "Reset Filters" clears all selected filters and immediately restores the complete torrent list.
+
+---
+
+### `[TC-LST-009]` Compact Tag Badges in Torrent List Card
+- **Type / Priority:** `Smoke`
+- **Preconditions:** Active server with torrents having tags assigned.
+- **Steps:**
+  1. Open `TorrentListView` with an active server.
+  2. Locate a torrent card with 1 or 2 tags assigned.
+  3. Locate a torrent card with 3 or more tags assigned.
+- **Expected Result:**
+  - For torrents with 1 or 2 tags, small capsule badges appear right-aligned in the card header row across from `statusBadge`.
+  - For torrents with 3+ tags, the first 2 tags are displayed alongside a `+N` badge (e.g. `+2`).
+  - Badges use secondary fill without crowding out the status badge or expanding the row height unnecessarily.
 
 ---
 
@@ -401,6 +416,23 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   - The Tracker row displays the clean host/domain of the primary announce URL (e.g. `toloka.to`), or `"—"` if none.
   - The Location row displays the complete, non-truncated server filesystem path (`downloadDir/name`) formatted in monospaced font with text selection enabled.
   - No copy button clutter is present on the location row.
+
+---
+
+### `[TC-DET-008]` Dynamic Tag Editing and Removal in Torrent Details
+- **Type / Priority:** `Smoke`
+- **Preconditions:** `TorrentDetailView` open for any torrent.
+- **Steps:**
+  1. Scroll to the "Tags" ("Теги") section in `TorrentDetailView`.
+  2. Enter a new tag name into the "Add tag..." field and press Return (or tap `+`).
+  3. Tap a suggested tag pill from "Suggested Tags" if available.
+  4. Tap the remove `(x)` button on an existing tag capsule.
+  5. If the network is unavailable or returns an error, observe the response.
+- **Expected Result:**
+  - Added tag immediately appears as a blue capsule chip and triggers RPC `torrent-set` with the new labels array.
+  - Suggested tag is added with a single tap and removed from the suggestions row.
+  - Removing a tag removes the capsule chip and triggers RPC `torrent-set` with the remaining labels. Removing the last tag sends `labels: []` to clear all tags.
+  - If network request fails, the optimistic update is rolled back to previous state and an error banner is displayed at the top of the detail screen.
 
 ---
 

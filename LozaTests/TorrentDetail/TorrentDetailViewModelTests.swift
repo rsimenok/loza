@@ -229,6 +229,7 @@ final class TorrentDetailViewModelTests: XCTestCase {
             }
             func removeTorrents(ids: [Int], deleteLocalData: Bool) async throws {}
             func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?) async throws {}
+            func setTorrentLabels(ids: [Int], labels: [String]) async throws {}
         }
 
         let mockClient = AsyncStoppingMockClient()
@@ -267,5 +268,68 @@ final class TorrentDetailViewModelTests: XCTestCase {
 
         vm.stopPolling()
         XCTAssertFalse(vm.isPolling)
+    }
+
+    // MARK: - Tag Mutation Tests
+
+    func testAddTagOptimisticUpdateAndRPC() async throws {
+        let client = makeClient()
+        let initialTorrent = Torrent(id: 1, name: "Test Torrent", labels: ["initial"])
+        let vm = TorrentDetailViewModel(torrent: initialTorrent, client: client)
+
+        await vm.addTag("new-tag")
+
+        XCTAssertEqual(vm.torrent.labels, ["initial", "new-tag"])
+        let serverTorrents = try await client.fetchTorrents()
+        let serverTorrent = serverTorrents.first { $0.id == 1 }
+        XCTAssertEqual(serverTorrent?.labels, ["initial", "new-tag"])
+    }
+
+    func testRemoveTagOptimisticUpdateAndRPC() async throws {
+        let client = makeClient()
+        let initialTorrent = Torrent(id: 1, name: "Test Torrent", labels: ["alpha", "beta"])
+        let vm = TorrentDetailViewModel(torrent: initialTorrent, client: client)
+
+        await vm.removeTag("alpha")
+
+        XCTAssertEqual(vm.torrent.labels, ["beta"])
+        let serverTorrents = try await client.fetchTorrents()
+        let serverTorrent = serverTorrents.first { $0.id == 1 }
+        XCTAssertEqual(serverTorrent?.labels, ["beta"])
+    }
+
+    func testAddTagRollbackOnError() async {
+        final class FailingClient: TransmissionClientProtocol, @unchecked Sendable {
+            func testConnection(config: ServerConfig) async throws -> SessionStats { SessionStats(downloadSpeed: 0, uploadSpeed: 0, torrentCount: 0, activeTorrentCount: 0, pausedTorrentCount: 0) }
+            func testConnection(config: ServerConfig, password: String?) async throws -> SessionStats { SessionStats(downloadSpeed: 0, uploadSpeed: 0, torrentCount: 0, activeTorrentCount: 0, pausedTorrentCount: 0) }
+            func fetchTorrents() async throws -> [Torrent] { [] }
+            func fetchSessionStats() async throws -> SessionStats { SessionStats(downloadSpeed: 0, uploadSpeed: 0, torrentCount: 0, activeTorrentCount: 0, pausedTorrentCount: 0) }
+            func startTorrents(ids: [Int]) async throws {}
+            func stopTorrents(ids: [Int]) async throws {}
+            func removeTorrents(ids: [Int], deleteLocalData: Bool) async throws {}
+            func addTorrent(magnetOrUrl: String?, base64Metainfo: String?, downloadDir: String?, paused: Bool?, labels: [String]?) async throws {}
+            func setTorrentLabels(ids: [Int], labels: [String]) async throws {
+                throw TransmissionError.serverUnreachable(underlying: NSError(domain: "test", code: -1))
+            }
+        }
+
+        let initialTorrent = Torrent(id: 1, name: "Test", labels: ["existing"])
+        let vm = TorrentDetailViewModel(torrent: initialTorrent, client: FailingClient())
+
+        await vm.addTag("failed-tag")
+
+        // Should roll back to original labels and populate errorMessage
+        XCTAssertEqual(vm.torrent.labels, ["existing"])
+        XCTAssertNotNil(vm.errorMessage)
+    }
+
+    func testAddTagDuplicateIgnored() async throws {
+        let client = makeClient()
+        let initialTorrent = Torrent(id: 1, name: "Test", labels: ["media"])
+        let vm = TorrentDetailViewModel(torrent: initialTorrent, client: client)
+
+        await vm.addTag("MEDIA")
+
+        XCTAssertEqual(vm.torrent.labels, ["media"])
     }
 }

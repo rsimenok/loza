@@ -18,8 +18,20 @@ struct TorrentDetailView: View {
     @State private var hasCopiedHash: Bool = false
     private var onDeleted: (() -> Void)?
 
-    init(torrent: Torrent, client: TransmissionClientProtocol? = nil, onDeleted: (() -> Void)? = nil) {
-        self._viewModel = State(wrappedValue: TorrentDetailViewModel(torrent: torrent, client: client))
+    init(
+        torrent: Torrent,
+        client: TransmissionClientProtocol? = nil,
+        availableServerTags: [String] = [],
+        onDeleted: (() -> Void)? = nil,
+        onTagsChanged: ((Int, [String]) -> Void)? = nil
+    ) {
+        let vm = TorrentDetailViewModel(
+            torrent: torrent,
+            client: client,
+            availableServerTags: availableServerTags
+        )
+        vm.onTagsChanged = onTagsChanged
+        self._viewModel = State(wrappedValue: vm)
         self.onDeleted = onDeleted
     }
 
@@ -49,6 +61,9 @@ struct TorrentDetailView: View {
 
             // MARK: - Section «Швидкість та трафік»
             speedAndTrafficSection
+
+            // MARK: - Section «Теги»
+            tagsSection
 
             // MARK: - Section «Піри»
             peersSection
@@ -229,6 +244,28 @@ struct TorrentDetailView: View {
             } label: {
                 Label("Uploaded", systemImage: "arrow.up.circle")
             }
+        }
+    }
+
+    private var tagsSection: some View {
+        Section("Tags") {
+            TagEditorView(
+                tags: Binding(
+                    get: { viewModel.torrent.labels },
+                    set: { viewModel.torrent.labels = $0 }
+                ),
+                availableServerTags: viewModel.availableServerTags,
+                onTagAdded: { newTag in
+                    Task {
+                        await viewModel.addTag(newTag)
+                    }
+                },
+                onTagRemoved: { removedTag in
+                    Task {
+                        await viewModel.removeTag(removedTag)
+                    }
+                }
+            )
         }
     }
 

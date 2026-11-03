@@ -238,6 +238,24 @@ final class TorrentListViewModelTests: XCTestCase {
         XCTAssertEqual(vm.filteredTorrents.count, 7)
     }
 
+    func testPruneStaleFiltersWhenLastTagRemoved() {
+        let mock = MockTransmissionClient(simulatedDelayNanoseconds: 0)
+        let vm = TorrentListViewModel(client: mock)
+        let torrent = Torrent(id: 1, name: "Test", labels: ["UniqueTag"])
+        vm.torrents = [torrent]
+        vm.selectedTags = ["UniqueTag"]
+        XCTAssertTrue(vm.hasActiveFilters)
+        XCTAssertEqual(vm.filteredTorrents.count, 1)
+
+        // Remove the unique tag from the torrent
+        vm.updateTorrentLabels(id: 1, labels: [])
+
+        // Filter should automatically prune UniqueTag
+        XCTAssertFalse(vm.hasActiveFilters)
+        XCTAssertTrue(vm.selectedTags.isEmpty)
+        XCTAssertEqual(vm.filteredTorrents.count, 1)
+    }
+
     // MARK: - Search Query Tests
 
     func testSearchQueryFiltering() {

@@ -22,8 +22,14 @@ struct TorrentRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Header: Status badge
-            statusBadge
+            // Header: Status badge & tags
+            HStack {
+                statusBadge
+                Spacer(minLength: 8)
+                if !torrent.labels.isEmpty {
+                    rowTagsView
+                }
+            }
 
             // Title
             Text(torrent.name)
@@ -148,6 +154,34 @@ struct TorrentRowView: View {
         .padding(.vertical, 3)
         .background(statusColor.opacity(0.12))
         .clipShape(Capsule())
+    }
+
+    @ViewBuilder
+    private var rowTagsView: some View {
+        let displayLimit = 2
+        let visibleTags = Array(torrent.labels.prefix(displayLimit))
+        let overflowCount = torrent.labels.count - displayLimit
+
+        HStack(spacing: 4) {
+            ForEach(visibleTags, id: \.self) { tag in
+                Text(tag)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color(.secondarySystemFill), in: Capsule())
+            }
+
+            if overflowCount > 0 {
+                Text("+\(overflowCount)")
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Color(.tertiarySystemFill), in: Capsule())
+            }
+        }
     }
 
     private var statusTitle: String {

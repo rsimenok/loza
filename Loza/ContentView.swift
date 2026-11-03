@@ -26,8 +26,12 @@ struct ContentView: View {
                 TorrentDetailView(
                     torrent: torrent,
                     client: listViewModel.client,
+                    availableServerTags: listViewModel.availableTags,
                     onDeleted: {
                         self.selectedTorrentId = nil
+                    },
+                    onTagsChanged: { id, newLabels in
+                        listViewModel.updateTorrentLabels(id: id, labels: newLabels)
                     }
                 )
                 .id(selectedTorrentId)

@@ -110,6 +110,23 @@ final class MockClientTests: XCTestCase {
         XCTAssertEqual(added.percentDone, 0.02)
     }
 
+    func testSetTorrentLabels() async throws {
+        let initialTorrents = try await client.fetchTorrents()
+        let ubuntu = try XCTUnwrap(initialTorrents.first(where: { $0.id == 1 }))
+        XCTAssertEqual(ubuntu.labels, [])
+
+        try await client.setTorrentLabels(ids: [1], labels: ["linux", "distro"])
+        let updatedTorrents = try await client.fetchTorrents()
+        let updatedUbuntu = try XCTUnwrap(updatedTorrents.first(where: { $0.id == 1 }))
+        XCTAssertEqual(updatedUbuntu.labels, ["linux", "distro"])
+
+        // Convenience method test
+        try await client.setTorrentLabels(id: 1, labels: ["iso"])
+        let finalTorrents = try await client.fetchTorrents()
+        let finalUbuntu = try XCTUnwrap(finalTorrents.first(where: { $0.id == 1 }))
+        XCTAssertEqual(finalUbuntu.labels, ["iso"])
+    }
+
     func testTestConnectionSuccess() async throws {
         let config = ServerConfig(name: "Test Server", host: "192.168.1.100", port: 9091)
         let stats = try await client.testConnection(config: config)

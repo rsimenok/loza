@@ -105,7 +105,14 @@ struct TorrentListView: View {
             }
             .navigationDestination(for: Int.self) { torrentId in
                 if let torrent = viewModel.torrents.first(where: { $0.id == torrentId }) {
-                    TorrentDetailView(torrent: torrent, client: viewModel.client)
+                    TorrentDetailView(
+                        torrent: torrent,
+                        client: viewModel.client,
+                        availableServerTags: viewModel.availableTags,
+                        onTagsChanged: { id, newLabels in
+                            viewModel.updateTorrentLabels(id: id, labels: newLabels)
+                        }
+                    )
                 }
             }
             .onAppear {

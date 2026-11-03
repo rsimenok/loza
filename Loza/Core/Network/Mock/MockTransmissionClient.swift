@@ -337,4 +337,15 @@ public final class MockTransmissionClient: TransmissionClientProtocol, @unchecke
             torrents.append(newTorrent)
         }
     }
+
+    public func setTorrentLabels(ids: [Int], labels: [String]) async throws {
+        try await simulateDelay()
+        stateLock.withLock { torrents in
+            for index in torrents.indices {
+                if ids.contains(torrents[index].id) {
+                    torrents[index].labels = labels
+                }
+            }
+        }
+    }
 }

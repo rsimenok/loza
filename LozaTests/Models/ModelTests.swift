@@ -303,4 +303,26 @@ struct ModelTests {
 
         #expect(json?["labels"] == nil)
     }
+
+    // MARK: - TorrentSetArguments Tests
+
+    @Test func testTorrentSetArgumentsEncoding() throws {
+        let args = TorrentSetArguments(ids: [42, 43], labels: ["media", "series"])
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(args)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+        #expect(json?["ids"] as? [Int] == [42, 43])
+        #expect(json?["labels"] as? [String] == ["media", "series"])
+    }
+
+    @Test func testTorrentSetArgumentsNilLabelsEncoding() throws {
+        let args = TorrentSetArguments(ids: [42])
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(args)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+        #expect(json?["ids"] as? [Int] == [42])
+        #expect(json?["labels"] == nil)
+    }
 }

@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Popover presenting multi-select filter criteria across Status, Tags, and Trackers.
 struct FilterPopoverView: View {
+    @Environment(\.dismiss) private var dismiss
     @Bindable var viewModel: TorrentListViewModel
 
     var body: some View {
@@ -44,6 +45,7 @@ struct FilterPopoverView: View {
         Button {
             HapticManager.shared.filterSelected()
             viewModel.resetFilters()
+            dismiss()
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.counterclockwise")

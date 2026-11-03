@@ -18,6 +18,7 @@ final class TorrentDetailViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
     var isDeleted: Bool = false
+    var availableServerTags: [String] = []
 
     // MARK: - Dependencies & Polling Configuration
 
@@ -30,6 +31,12 @@ final class TorrentDetailViewModel {
     /// Tracks an optimistic status transition (e.g. paused/resumed) until the server catches up.
     private var pendingStatus: TorrentStatus?
     private var pendingStatusTimestamp: Date?
+
+    /// Tracks optimistic label transitions until the server confirms.
+    private var pendingLabels: [String]?
+
+    /// Callback when labels are successfully updated.
+    var onTagsChanged: ((Int, [String]) -> Void)?
 
     /// Indicates whether background polling is currently running.
     var isPolling: Bool {
@@ -46,11 +53,13 @@ final class TorrentDetailViewModel {
         torrent: Torrent,
         client: TransmissionClientProtocol? = nil,
         environment: AppEnvironment? = nil,
+        availableServerTags: [String] = [],
         pollingInterval: TimeInterval = 2.5
     ) {
         self.torrent = torrent
         self.explicitClient = client
         self.environment = environment
+        self.availableServerTags = availableServerTags
         self.pollingInterval = pollingInterval
     }
 
@@ -98,6 +107,62 @@ final class TorrentDetailViewModel {
     }
 
     // MARK: - Actions
+
+    /// Dynamically adds a tag to the torrent with optimistic UI update and error rollback.
+    func addTag(_ tag: String) async {
+        guard let client = client else {
+            self.errorMessage = "Немає активного сервера"
+            return
+        }
+
+        let trimmed = tag.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if torrent.labels.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+            return
+        }
+
+        let previousLabels = torrent.labels
+        var updatedLabels = previousLabels
+        updatedLabels.append(trimmed)
+
+        pendingLabels = updatedLabels
+        torrent.labels = updatedLabels
+
+        do {
+            try await client.setTorrentLabels(id: torrent.id, labels: updatedLabels)
+            pendingLabels = nil
+            onTagsChanged?(torrent.id, updatedLabels)
+        } catch {
+            pendingLabels = nil
+            torrent.labels = previousLabels
+            self.errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Dynamically removes a tag from the torrent with optimistic UI update and error rollback.
+    func removeTag(_ tag: String) async {
+        guard let client = client else {
+            self.errorMessage = "Немає активного сервера"
+            return
+        }
+
+        let previousLabels = torrent.labels
+        var updatedLabels = previousLabels
+        updatedLabels.removeAll { $0 == tag }
+
+        pendingLabels = updatedLabels
+        torrent.labels = updatedLabels
+
+        do {
+            try await client.setTorrentLabels(id: torrent.id, labels: updatedLabels)
+            pendingLabels = nil
+            onTagsChanged?(torrent.id, updatedLabels)
+        } catch {
+            pendingLabels = nil
+            torrent.labels = previousLabels
+            self.errorMessage = error.localizedDescription
+        }
+    }
 
     /// Toggles the running/stopped state of the torrent.
     func toggleState() async {
@@ -184,6 +249,9 @@ final class TorrentDetailViewModel {
         do {
             let torrents = try await client.fetchTorrents()
             if var updated = torrents.first(where: { $0.id == torrent.id }) {
+                if let pending = pendingLabels {
+                    updated.labels = pending
+                }
                 if let pending = pendingStatus {
                     let now = Date()
                     if let ts = pendingStatusTimestamp, now.timeIntervalSince(ts) > 10 {

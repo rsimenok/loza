@@ -14,7 +14,11 @@ import SwiftUI
 final class TorrentListViewModel {
     // MARK: - Published State
 
-    var torrents: [Torrent] = []
+    var torrents: [Torrent] = [] {
+        didSet {
+            pruneStaleFilters()
+        }
+    }
     var sessionStats: SessionStats?
     var isLoading: Bool = false
     var errorMessage: String?
@@ -163,6 +167,26 @@ final class TorrentListViewModel {
         selectedStatuses.removeAll()
         selectedTags.removeAll()
         selectedTrackers.removeAll()
+    }
+
+    /// Updates labels for a specific torrent in memory and prunes stale filters.
+    func updateTorrentLabels(id: Int, labels: [String]) {
+        if let index = torrents.firstIndex(where: { $0.id == id }) {
+            torrents[index].labels = labels
+        }
+    }
+
+    /// Removes any selected tags or trackers that no longer exist on any torrent on the server.
+    private func pruneStaleFilters() {
+        let validTags = Set(availableTags)
+        if !selectedTags.isEmpty && !selectedTags.isSubset(of: validTags) {
+            selectedTags.formIntersection(validTags)
+        }
+
+        let validTrackers = Set(availableTrackers)
+        if !selectedTrackers.isEmpty && !selectedTrackers.isSubset(of: validTrackers) {
+            selectedTrackers.formIntersection(validTrackers)
+        }
     }
 
     // MARK: - Polling Management

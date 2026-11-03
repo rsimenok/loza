@@ -142,3 +142,15 @@ nonisolated public struct TorrentAddArguments: Encodable, Sendable, Equatable {
         case labels
     }
 }
+
+/// Arguments for the `torrent-set` RPC method.
+nonisolated public struct TorrentSetArguments: Encodable, Sendable, Equatable {
+    public let ids: [Int]
+    public let labels: [String]?
+
+    public init(ids: [Int], labels: [String]? = nil) {
+        self.ids = ids
+        self.labels = labels
+    }
+}
+
