@@ -41,7 +41,7 @@ Your privacy is a core principle of this project. Loza is built from the ground 
 
 ## 5. Open Source Transparency
 
-Loza is 100% open-source software under the MIT License. The complete source code is publicly accessible and auditable at:  
+Loza is 100% open-source software under the GNU General Public License v3.0 (GPLv3). The complete source code is publicly accessible and auditable at:  
 [https://github.com/rsimenok/loza](https://github.com/rsimenok/loza)
 
 ---
