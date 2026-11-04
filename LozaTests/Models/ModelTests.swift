@@ -163,6 +163,23 @@ struct ModelTests {
         #expect(!zeroSpeed.localizedCaseInsensitiveContains("нуль"))
     }
 
+    @Test func testTorrentSpeedFormattingRanges() {
+        let zeroSpeed = Torrent.formatSpeed(0)
+        #expect(zeroSpeed.contains("0"))
+        #expect(zeroSpeed.contains("/s") || zeroSpeed.contains("/с"))
+
+        let smallSpeed = Torrent.formatSpeed(512)
+        #expect(smallSpeed.contains("512"))
+        #expect(smallSpeed.contains("/s") || smallSpeed.contains("/с"))
+
+        let oneKBSpeed = Torrent.formatSpeed(1024)
+        #expect(oneKBSpeed.contains("1"))
+        #expect(oneKBSpeed.contains("/s") || oneKBSpeed.contains("/с"))
+
+        let negativeSpeed = Torrent.formatSpeed(-100)
+        #expect(negativeSpeed.contains("0"))
+    }
+
     // MARK: - Torrent Tracker & Download Directory Tests
 
     @Test func testTorrentTrackerAndDownloadDirDecoding() throws {

@@ -297,11 +297,16 @@ nonisolated public struct Torrent: Identifiable, Codable, Sendable, Equatable, H
     }
 
     public static func formatSpeed(_ bytesPerSecond: Int64) -> String {
+        let speed = max(0, bytesPerSecond)
+        if speed < 1024 {
+            return String(localized: "\(speed) B/s", comment: "Speed formatted in bytes per second, e.g. 0 B/s, 0 Б/с, or 0 o/s")
+        }
+
         let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useAll]
+        formatter.allowedUnits = [.useKB, .useMB, .useGB, .useTB]
         formatter.countStyle = .file
         formatter.allowsNonnumericFormatting = false
-        let formattedBytes = formatter.string(fromByteCount: bytesPerSecond)
+        let formattedBytes = formatter.string(fromByteCount: speed)
         return String(localized: "\(formattedBytes)/s", comment: "Speed formatted per second, e.g. 1.5 MB/s")
     }
 

@@ -62,7 +62,7 @@ struct LocalizationAndHapticsTests {
             "No Servers", "No Server Selected", "No Torrents", "Search Torrents...",
             "No Torrent Selected", "Select a torrent from the sidebar to view details, files, and connected peers.",
             "Invalid server URL.", "Authentication failed (401 Unauthorized).", "Cannot reach server: %@",
-            "%@/s",
+            "%@/s", "%lld B/s",
             "About", "Free and open-source utility for remote management of your Transmission daemon.",
             "Project", "Source Code on GitHub", "Third-Party Software", "Version %@ (%@)",
             "Support Loza", "Tip Jar", "Supporter", "Restore Purchases", "Loza Supporter Club", "Monthly Supporter", "One-Time Tips", "Thank You!",
@@ -128,6 +128,31 @@ struct LocalizationAndHapticsTests {
         #expect(ukValue == "%@/с")
         #expect(ukValue.contains("\u{0441}"))
         #expect(!ukValue.contains("s"))
+
+        // Test %lld B/s entry for Ukrainian and French localizations
+        guard let byteSpeedEntry = strings["%lld B/s"],
+              let byteLocalizations = byteSpeedEntry["localizations"] as? [String: [String: Any]],
+              let ukByteEntry = byteLocalizations["uk"],
+              let ukByteUnit = ukByteEntry["stringUnit"] as? [String: Any],
+              let ukByteValue = ukByteUnit["value"] as? String else {
+            Issue.record("Missing '%lld B/s' Ukrainian localization")
+            return
+        }
+
+        #expect(ukByteValue == "%lld Б/с")
+        #expect(ukByteValue.contains("\u{0411}")) // Cyrillic capital 'Б'
+        #expect(ukByteValue.contains("\u{0441}")) // Cyrillic small 'с'
+        #expect(!ukByteValue.contains("B"))
+        #expect(!ukByteValue.contains("s"))
+
+        // Test French localization: octets per second ("o/s")
+        guard let frByteEntry = byteLocalizations["fr"],
+              let frByteUnit = frByteEntry["stringUnit"] as? [String: Any],
+              let frByteValue = frByteUnit["value"] as? String else {
+            Issue.record("Missing '%lld B/s' French localization")
+            return
+        }
+        #expect(frByteValue == "%lld o/s")
     }
 
     @Test func testInfoPlistCatalogIntegrity() throws {

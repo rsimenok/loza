@@ -20,6 +20,7 @@ struct ContentView: View {
                 viewModel: listViewModel,
                 selectedTorrentId: $selectedTorrentId
             )
+            .navigationSplitViewColumnWidth(min: 340, ideal: 400, max: 500)
         } detail: {
             if let selectedTorrentId,
                let torrent = listViewModel.torrents.first(where: { $0.id == selectedTorrentId }) {

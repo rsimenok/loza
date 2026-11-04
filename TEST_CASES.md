@@ -94,16 +94,17 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ### `[TC-SRV-005]` Multi-Server Switching via Toolbar Menu
 - **Type / Priority:** `Smoke`
-- **Preconditions:** At least two distinct servers saved (e.g., `Home NAS` and `Seedbox VPS`).
+- **Preconditions:** At least two distinct servers saved (e.g., `Home NAS` and `Seedbox VPS`) and active background polling running.
 - **Steps:**
   1. From `TorrentListView`, tap the `server.rack` icon in the leading toolbar.
-  2. Review the list of configured servers in the menu (checkmark next to currently active server).
+  2. Keep the menu open for at least 5 seconds (spanning multiple 2.5s polling cycles) and review the list of configured servers (checkmark next to currently active server).
   3. Select `Seedbox VPS`.
 - **Expected Result:**
+  - While the menu bubble is open, background polling updates do not cause the menu items to flicker, reload, or play refresh animations (`ServerSelectionMenuView` `Equatable` isolation).
   - Navigation bar title immediately changes to `Seedbox VPS`.
   - Active server state in `AppEnvironment` switches.
   - Torrent list immediately refreshes with torrents belonging to `Seedbox VPS`.
-  - Bottom bar aggregate speeds update to reflect `Seedbox VPS`.
+  - Header aggregate speeds update to reflect `Seedbox VPS`.
 
 ---
 
@@ -206,7 +207,7 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   1. Look at the bottom toolbar (`ToolbarItem(placement: .bottomBar)`).
   2. Verify download speed (`↓ <rate>`) and upload speed (`↑ <rate>`).
 - **Expected Result:**
-  - Speed indicator displays units formatted dynamically (`KB/s` or `MB/s`).
+  - Speed indicator displays units formatted dynamically (`B/s`, `KB/s`, or `MB/s`, localized `Б/с` or `o/s`).
   - Text is not truncated or squished on both compact iPhone and large iPad screens.
 
 ---
