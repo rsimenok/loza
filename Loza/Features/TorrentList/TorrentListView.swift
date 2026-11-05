@@ -37,27 +37,44 @@ struct TorrentListView: View {
 
     var body: some View {
         let activeServerName = environment?.activeServer?.name ?? ""
-        let downloadSpeed = viewModel.sessionStats?.downloadSpeed ?? 0
-        let uploadSpeed = viewModel.sessionStats?.uploadSpeed ?? 0
 
         mainContent
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    serverSelectionMenu
+                    ServerSelectionMenuView(
+                        servers: environment?.serverRepository.servers ?? [],
+                        activeServerId: environment?.activeServer?.id,
+                        onSelectServer: { server in
+                            environment?.switchServer(to: server)
+                        },
+                        onManageServers: {
+                            isPresentingServerList = true
+                        },
+                        onSupportLoza: {
+                            isPresentingTipJar = true
+                        },
+                        onAbout: {
+                            isPresentingAbout = true
+                        }
+                    )
+                    .equatable()
                 }
 
                 ToolbarItem(placement: .principal) {
-                    principalHeaderView(
+                    TorrentListPrincipalHeaderView(
                         serverName: activeServerName,
-                        downloadSpeed: downloadSpeed,
-                        uploadSpeed: uploadSpeed
+                        hasActiveServer: hasActiveServer,
+                        viewModel: viewModel
                     )
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
-                        filterButton
+                        TorrentListFilterButton(
+                            viewModel: viewModel,
+                            isShowingFilters: $isShowingFilters
+                        )
 
                         Button {
                             isPresentingAddTorrent = true
@@ -156,11 +173,102 @@ struct TorrentListView: View {
         } else if !hasActiveServer {
             noActiveServerSelectedView
         } else {
-            torrentList
+            TorrentListContentView(
+                viewModel: viewModel,
+                selectedTorrentId: $selectedTorrentId,
+                isPresentingAddTorrent: $isPresentingAddTorrent
+            )
         }
     }
 
-    private var torrentList: some View {
+    @ViewBuilder
+    private var noServersConfiguredView: some View {
+        ContentUnavailableView {
+            Label("No Servers", systemImage: "server.rack")
+        } description: {
+            Text("Configure a Transmission server to remotely manage downloads.")
+        } actions: {
+            Button("Configure Server") {
+                isPresentingServerList = true
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+
+    @ViewBuilder
+    private var noActiveServerSelectedView: some View {
+        ContentUnavailableView {
+            Label("No Server Selected", systemImage: "network.slash")
+        } description: {
+            Text("Select a server from the list to view torrents.")
+        } actions: {
+            Button("Select Server") {
+                isPresentingServerList = true
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+}
+
+// MARK: - Isolated Toolbar & Content Subviews
+
+@MainActor
+private struct TorrentListPrincipalHeaderView: View {
+    let serverName: String
+    let hasActiveServer: Bool
+    let viewModel: TorrentListViewModel
+
+    var body: some View {
+        if hasActiveServer {
+            VStack(spacing: 1) {
+                if !serverName.isEmpty {
+                    Text(serverName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                }
+
+                SpeedIndicatorView(
+                    downloadSpeed: viewModel.sessionStats?.downloadSpeed ?? 0,
+                    uploadSpeed: viewModel.sessionStats?.uploadSpeed ?? 0
+                )
+                .accessibilityIdentifier("speedIndicator")
+            }
+        } else if !serverName.isEmpty {
+            Text(serverName)
+                .font(.headline)
+                .lineLimit(1)
+        }
+    }
+}
+
+@MainActor
+private struct TorrentListFilterButton: View {
+    @Bindable var viewModel: TorrentListViewModel
+    @Binding var isShowingFilters: Bool
+
+    var body: some View {
+        Button {
+            isShowingFilters.toggle()
+        } label: {
+            Image(systemName: viewModel.hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
+                .foregroundStyle(viewModel.hasActiveFilters ? Color.accentColor : Color.primary)
+        }
+        .accessibilityLabel("Filters")
+        .popover(isPresented: $isShowingFilters) {
+            FilterPopoverView(viewModel: viewModel)
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+}
+
+@MainActor
+private struct TorrentListContentView: View {
+    @Bindable var viewModel: TorrentListViewModel
+    @Binding var selectedTorrentId: Int?
+    @Binding var isPresentingAddTorrent: Bool
+
+    var body: some View {
         List {
             if let error = viewModel.errorMessage {
                 errorBanner(message: error)
@@ -292,93 +400,6 @@ struct TorrentListView: View {
         }
     }
 
-    @ViewBuilder
-    private func principalHeaderView(
-        serverName: String,
-        downloadSpeed: Int64,
-        uploadSpeed: Int64
-    ) -> some View {
-        if hasActiveServer {
-            VStack(spacing: 1) {
-                if !serverName.isEmpty {
-                    Text(serverName)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                }
-
-                SpeedIndicatorView(
-                    downloadSpeed: downloadSpeed,
-                    uploadSpeed: uploadSpeed
-                )
-                .accessibilityIdentifier("speedIndicator")
-            }
-        } else if !serverName.isEmpty {
-            Text(serverName)
-                .font(.headline)
-                .lineLimit(1)
-        }
-    }
-
-    private var filterButton: some View {
-        Button {
-            isShowingFilters.toggle()
-        } label: {
-            Image(systemName: viewModel.hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
-                .foregroundStyle(viewModel.hasActiveFilters ? Color.accentColor : Color.primary)
-        }
-        .accessibilityLabel("Filters")
-        .popover(isPresented: $isShowingFilters) {
-            FilterPopoverView(viewModel: viewModel)
-                .presentationCompactAdaptation(.popover)
-        }
-    }
-
-    private var serverSelectionMenu: some View {
-        Menu {
-            if let servers = environment?.serverRepository.servers, !servers.isEmpty {
-                Section("Servers") {
-                    ForEach(servers) { server in
-                        Button {
-                            environment?.switchServer(to: server)
-                        } label: {
-                            HStack {
-                                Text(server.name)
-                                if server.id == environment?.activeServer?.id {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Divider()
-
-            Button {
-                isPresentingServerList = true
-            } label: {
-                Label("Server Management", systemImage: "server.rack")
-            }
-
-            Button {
-                isPresentingTipJar = true
-            } label: {
-                Label("Support Loza", systemImage: "heart.fill")
-            }
-
-            Button {
-                isPresentingAbout = true
-            } label: {
-                Label("About", systemImage: "info.circle")
-            }
-        } label: {
-            Image(systemName: "server.rack")
-                .foregroundStyle(.primary)
-        }
-        .accessibilityLabel("Servers")
-    }
-
     private func errorBanner(message: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
@@ -414,34 +435,6 @@ struct TorrentListView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
         .padding(.vertical, 6)
-    }
-
-    @ViewBuilder
-    private var noServersConfiguredView: some View {
-        ContentUnavailableView {
-            Label("No Servers", systemImage: "server.rack")
-        } description: {
-            Text("Configure a Transmission server to remotely manage downloads.")
-        } actions: {
-            Button("Configure Server") {
-                isPresentingServerList = true
-            }
-            .buttonStyle(.borderedProminent)
-        }
-    }
-
-    @ViewBuilder
-    private var noActiveServerSelectedView: some View {
-        ContentUnavailableView {
-            Label("No Server Selected", systemImage: "network.slash")
-        } description: {
-            Text("Select a server from the list to view torrents.")
-        } actions: {
-            Button("Select Server") {
-                isPresentingServerList = true
-            }
-            .buttonStyle(.borderedProminent)
-        }
     }
 
     @ViewBuilder

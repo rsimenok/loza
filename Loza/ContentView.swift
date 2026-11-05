@@ -22,29 +22,42 @@ struct ContentView: View {
             )
             .navigationSplitViewColumnWidth(min: 340, ideal: 400, max: 500)
         } detail: {
-            if let selectedTorrentId,
-               let torrent = listViewModel.torrents.first(where: { $0.id == selectedTorrentId }) {
-                TorrentDetailView(
-                    torrent: torrent,
-                    client: listViewModel.client,
-                    availableServerTags: listViewModel.availableTags,
-                    onDeleted: {
-                        self.selectedTorrentId = nil
-                    },
-                    onTagsChanged: { id, newLabels in
-                        listViewModel.updateTorrentLabels(id: id, labels: newLabels)
-                    }
-                )
-                .id(selectedTorrentId)
-            } else {
-                ContentUnavailableView(
-                    String(localized: "No Torrent Selected"),
-                    systemImage: "arrow.down.circle",
-                    description: Text("Select a torrent from the sidebar to view details, files, and connected peers.")
-                )
-            }
+            TorrentSplitDetailColumnView(
+                viewModel: listViewModel,
+                selectedTorrentId: $selectedTorrentId
+            )
         }
         .navigationSplitViewStyle(.balanced)
+    }
+}
+
+@MainActor
+private struct TorrentSplitDetailColumnView: View {
+    let viewModel: TorrentListViewModel
+    @Binding var selectedTorrentId: Int?
+
+    var body: some View {
+        if let selectedTorrentId,
+           let torrent = viewModel.torrents.first(where: { $0.id == selectedTorrentId }) {
+            TorrentDetailView(
+                torrent: torrent,
+                client: viewModel.client,
+                availableServerTags: viewModel.availableTags,
+                onDeleted: {
+                    self.selectedTorrentId = nil
+                },
+                onTagsChanged: { id, newLabels in
+                    viewModel.updateTorrentLabels(id: id, labels: newLabels)
+                }
+            )
+            .id(selectedTorrentId)
+        } else {
+            ContentUnavailableView(
+                String(localized: "No Torrent Selected"),
+                systemImage: "arrow.down.circle",
+                description: Text("Select a torrent from the sidebar to view details, files, and connected peers.")
+            )
+        }
     }
 }
 
