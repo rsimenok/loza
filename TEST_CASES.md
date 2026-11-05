@@ -15,6 +15,7 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   * `TC-PUR-*` — In-App Purchases (StoreKit 2 Tip Jar & Supporter)
   * `TC-LOC-*` — Localization & Tactile Haptics
   * `TC-PWR-*` — Lifecycle, Concurrency & Battery
+  * `TC-SNP-*` — Automated Screenshot Generation & Fastlane Snapshot
 * **Type / Priority:**
   * `Smoke`: Critical user paths and core functionality. Must pass before any release or major merge.
   * `Regression`: Edge cases, validation checks, network recovery, and secondary flows.
@@ -709,3 +710,21 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   - Thread-safe storage captures new session ID.
   - Interceptor retries request transparently.
   - User sees no error or disconnection alert.
+
+---
+
+## 10. Automated Screenshot Capture (`TC-SNP`)
+
+### `[TC-SNP-001]` Automated App Store Screenshot Sequence
+- **Type / Priority:** `Automated UI Test` / `Smoke`
+- **Preconditions:** App launched with `--uitesting-mock` launch argument.
+- **Steps:**
+  1. Launch app with `setupSnapshot(app)` and `--uitesting-mock`.
+  2. Wait for mock torrent list to load and capture `01_TorrentList`.
+  3. Tap `serverMenuButton`, tap `manageServersButton`, verify `closeButton` and capture `02_ServerList`.
+  4. Dismiss server management sheet via `closeButton`.
+  5. Tap `filterButton`, verify `filterPopover` exists and capture `03_TorrentFilter`.
+  6. Dismiss filter popover.
+  7. Tap `Alpine-standard-3.20.3-x86_64.iso`, verify `torrentDetailView` and capture `04_TorrentDetail`.
+- **Expected Result:**
+  - All 4 screenshots are saved into `screenshotsDirectory` without UI hierarchy errors or timeouts across all configured locales and devices.

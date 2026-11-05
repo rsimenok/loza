@@ -37,6 +37,7 @@ struct FilterPopoverView: View {
             }
         }
         .frame(minWidth: 250, maxWidth: 320, maxHeight: 400)
+        .accessibilityIdentifier("filterPopover")
     }
 
     // MARK: - Subviews

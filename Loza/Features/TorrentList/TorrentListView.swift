@@ -255,6 +255,7 @@ private struct TorrentListFilterButton: View {
                 .foregroundStyle(viewModel.hasActiveFilters ? Color.accentColor : Color.primary)
         }
         .accessibilityLabel("Filters")
+        .accessibilityIdentifier("filterButton")
         .popover(isPresented: $isShowingFilters) {
             FilterPopoverView(viewModel: viewModel)
                 .presentationCompactAdaptation(.popover)

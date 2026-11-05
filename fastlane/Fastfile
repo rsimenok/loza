@@ -1,0 +1,73 @@
+# frozen_string_literal: true
+
+# Ensure Snapshot recognizes iPhone 18 series when generating HTML summary reports
+require "snapshot"
+require "snapshot/reports_generator"
+
+module ::Snapshot
+  class ReportsGenerator
+    alias_method :orig_available_devices, :available_devices
+    def available_devices
+      devices = orig_available_devices
+      devices["iPhone 18 Pro Max"] = "iPhone 18 Pro Max"
+      devices["iPhone 18"] = "iPhone 18"
+      devices
+    end
+  end
+end
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Capture App Store screenshots for all supported devices and languages"
+  lane :screenshots do
+    snapshot
+  end
+
+  desc "Upload screenshots from ./fastlane/screenshots to App Store Connect via deliver"
+  lane :upload_screenshots do |options|
+    # Authenticate with App Store Connect API Key if provided in options or environment
+    api_key = nil
+    if options[:api_key]
+      api_key = options[:api_key]
+    elsif options[:api_key_path] || ENV["APP_STORE_CONNECT_API_KEY_JSON_PATH"] || ENV["ASC_KEY_JSON_PATH"]
+      api_key = app_store_connect_api_key(
+        key_filepath: options[:api_key_path] || ENV["APP_STORE_CONNECT_API_KEY_JSON_PATH"] || ENV["ASC_KEY_JSON_PATH"]
+      )
+    elsif options[:key_id] || ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"] || ENV["ASC_KEY_ID"]
+      key_filepath = options[:key_filepath] || ENV["APP_STORE_CONNECT_API_KEY_KEY_FILEPATH"] || ENV["ASC_KEY_PATH"]
+      if key_filepath && !File.exist?(key_filepath)
+        candidates = [
+          File.join("fastlane", key_filepath),
+          File.join("fastlane", File.basename(key_filepath)),
+          File.basename(key_filepath)
+        ]
+        found = candidates.find { |p| File.exist?(p) }
+        key_filepath = found if found
+      elsif key_filepath.nil? || key_filepath.empty?
+        # Auto-discover .p8 file if placed in fastlane/ or project root
+        key_filepath = Dir["fastlane/AuthKey_*.p8"].first || Dir["AuthKey_*.p8"].first
+      end
+
+      api_key = app_store_connect_api_key(
+        key_id: options[:key_id] || ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"] || ENV["ASC_KEY_ID"],
+        issuer_id: options[:issuer_id] || ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"] || ENV["ASC_ISSUER_ID"],
+        key_filepath: key_filepath,
+        key_content: options[:key_content] || ENV["APP_STORE_CONNECT_API_KEY_KEY"] || ENV["ASC_KEY_CONTENT"],
+        is_key_content_base64: options[:is_key_content_base64] || ENV["APP_STORE_CONNECT_API_KEY_IS_KEY_CONTENT_BASE64"] == "true" || ENV["ASC_KEY_IS_BASE64"] == "true",
+        duration: 1200,
+        in_house: false
+      )
+    end
+
+    deliver_options = {
+      skip_binary_upload: true,
+      skip_metadata: true,
+      screenshots_path: "./fastlane/screenshots",
+      overwrite_screenshots: true
+    }
+    deliver_options[:api_key] = api_key if api_key
+
+    deliver(deliver_options)
+  end
+end

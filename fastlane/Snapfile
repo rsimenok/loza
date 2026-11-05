@@ -1,0 +1,39 @@
+# A list of devices you want to take the screenshots from
+devices([
+  "iPhone 18 Pro Max",
+  "iPad Pro 13-inch (M5)"
+])
+
+# A list of languages you want to take the screenshots in
+languages([
+  "en-US",
+  "uk",
+  "de-DE",
+  "fr-FR",
+  "es-ES",
+  "pl"
+])
+
+# The name of the scheme which contains the UI Tests
+scheme("LozaUITests")
+
+# Where should the resulting screenshots be stored?
+output_directory("./fastlane/screenshots")
+
+# Clear previous screenshots before generating new ones
+clear_previous_screenshots(true)
+
+# Override the status bar to show 9:41 AM, 100% battery, full signal
+override_status_bar(true)
+
+# Light mode only matching App Store screenshot guidelines
+dark_mode(false)
+
+# Arguments to pass to the app on launch
+launch_arguments(["--uitesting-mock"])
+
+# Derived data path per AGENTS.md rules
+derived_data_path("/tmp/DerivedData")
+
+# Run only the dedicated screenshot test suite during snapshot
+only_testing(["LozaUITests/LozaSnapshotUITests"])

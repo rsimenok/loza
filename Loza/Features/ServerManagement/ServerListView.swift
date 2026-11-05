@@ -62,6 +62,7 @@ public struct ServerListView: View {
                         Image(systemName: "xmark")
                     }
                     .accessibilityLabel("Close")
+                    .accessibilityIdentifier("closeButton")
                 }
 
                 ToolbarItem(placement: .primaryAction) {

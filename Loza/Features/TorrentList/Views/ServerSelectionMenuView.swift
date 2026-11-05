@@ -47,6 +47,7 @@ struct ServerSelectionMenuView: View, Equatable {
             } label: {
                 Label("Server Management", systemImage: "server.rack")
             }
+            .accessibilityIdentifier("manageServersButton")
 
             Button {
                 onSupportLoza()
@@ -64,5 +65,6 @@ struct ServerSelectionMenuView: View, Equatable {
                 .foregroundStyle(.primary)
         }
         .accessibilityLabel("Servers")
+        .accessibilityIdentifier("serverMenuButton")
     }
 }

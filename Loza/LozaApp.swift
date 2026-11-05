@@ -24,6 +24,8 @@ struct LozaApp: App {
             )
             let demoServer = ServerConfig(name: "Home NAS", host: "192.168.1.100")
             try? repo.addServer(demoServer, password: nil)
+            let secondaryServer = ServerConfig(name: "Seedbox VPS", host: "10.0.0.5")
+            try? repo.addServer(secondaryServer, password: nil)
 
             var torrents = MockTransmissionClient.defaultSampleTorrents()
             let extraLegalDistros = [

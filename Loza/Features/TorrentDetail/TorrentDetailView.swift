@@ -75,6 +75,7 @@ struct TorrentDetailView: View {
             informationSection
         }
         .listStyle(.insetGrouped)
+        .accessibilityIdentifier("torrentDetailView")
         .navigationTitle(viewModel.torrent.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
