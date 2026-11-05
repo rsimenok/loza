@@ -6,6 +6,13 @@
 //
 
 import SwiftUI
+import UIKit
+
+@MainActor
+private let emptyMenuIcon: UIImage = {
+    let size = UIImage(systemName: "checkmark")?.size ?? CGSize(width: 18, height: 18)
+    return UIGraphicsImageRenderer(size: size).image { _ in }
+}()
 
 /// Toolbar menu for switching the active Transmission server and accessing app settings.
 /// Conforms to `Equatable` to prevent menu reconstruction and open-menu reload animations during background polling.
@@ -29,10 +36,13 @@ struct ServerSelectionMenuView: View, Equatable {
                         Button {
                             onSelectServer(server)
                         } label: {
-                            HStack {
-                                Text(server.name)
-                                if server.id == activeServerId {
-                                    Image(systemName: "checkmark")
+                            if server.id == activeServerId {
+                                Label(server.name, systemImage: "checkmark")
+                            } else {
+                                Label {
+                                    Text(server.name)
+                                } icon: {
+                                    Image(uiImage: emptyMenuIcon)
                                 }
                             }
                         }

@@ -68,9 +68,8 @@ struct FilterPopoverView: View {
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Status")
-                .font(.footnote.weight(.semibold))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
-                .textCase(.uppercase)
 
             ForEach(TorrentStatusCategory.allCases) { category in
                 filterRow(
@@ -87,9 +86,8 @@ struct FilterPopoverView: View {
     private var tagsSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Tags")
-                .font(.footnote.weight(.semibold))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
-                .textCase(.uppercase)
 
             ForEach(viewModel.availableTags, id: \.self) { tag in
                 filterRow(
@@ -106,9 +104,8 @@ struct FilterPopoverView: View {
     private var trackersSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Trackers")
-                .font(.footnote.weight(.semibold))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
-                .textCase(.uppercase)
 
             ForEach(viewModel.availableTrackers, id: \.self) { tracker in
                 filterRow(
@@ -134,6 +131,19 @@ struct FilterPopoverView: View {
             action()
         } label: {
             HStack(spacing: 8) {
+                (
+                    Text(title)
+                        .foregroundStyle(.primary)
+                    +
+                    Text(" (\(count))")
+                        .foregroundStyle(.secondary)
+                )
+                .font(.body)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+
+                Spacer(minLength: 8)
+
                 ZStack {
                     if isSelected {
                         Image(systemName: "checkmark")
@@ -142,17 +152,6 @@ struct FilterPopoverView: View {
                     }
                 }
                 .frame(width: 18, alignment: .center)
-
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-
-                Spacer()
-
-                Text("\(count)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
             }
             .contentShape(Rectangle())
             .padding(.vertical, 5)

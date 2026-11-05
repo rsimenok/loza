@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "dotenv"
+Dotenv.load(File.expand_path(".env", __dir__), File.expand_path("../.env", __dir__))
+
 # Ensure Snapshot recognizes iPhone 18 series when generating HTML summary reports
 require "snapshot"
 require "snapshot/reports_generator"
@@ -61,6 +64,7 @@ platform :ios do
     end
 
     deliver_options = {
+      force: true,
       skip_binary_upload: true,
       skip_metadata: true,
       screenshots_path: "./fastlane/screenshots",

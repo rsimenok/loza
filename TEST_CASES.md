@@ -15,7 +15,7 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
   * `TC-PUR-*` — In-App Purchases (StoreKit 2 Tip Jar & Supporter)
   * `TC-LOC-*` — Localization & Tactile Haptics
   * `TC-PWR-*` — Lifecycle, Concurrency & Battery
-  * `TC-SNP-*` — Automated Screenshot Generation & Fastlane Snapshot
+  * `TC-SCR-*` — Automated Screenshots & App Store Connect Upload
 * **Type / Priority:**
   * `Smoke`: Critical user paths and core functionality. Must pass before any release or major merge.
   * `Regression`: Edge cases, validation checks, network recovery, and secondary flows.
@@ -98,7 +98,10 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 - **Preconditions:** At least two distinct servers saved (e.g., `Home NAS` and `Seedbox VPS`) and active background polling running.
 - **Steps:**
   1. From `TorrentListView`, tap the `server.rack` icon in the leading toolbar.
-  2. Keep the menu open for at least 5 seconds (spanning multiple 2.5s polling cycles) and review the list of configured servers (checkmark next to currently active server).
+  2. Keep the menu open for at least 5 seconds (spanning multiple 2.5s polling cycles) and review the list of configured servers:
+     - All server names are vertically aligned in a uniform column.
+     - The currently active server (`Home NAS`) displays a checkmark icon aligned with the action icons below the divider.
+     - Inactive servers reserve identical icon space, keeping all server names and action titles in a shared column without text wrapping.
   3. Select `Seedbox VPS`.
 - **Expected Result:**
   - While the menu bubble is open, background polling updates do not cause the menu items to flicker, reload, or play refresh animations (`ServerSelectionMenuView` `Equatable` isolation).
@@ -162,11 +165,13 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 - **Preconditions:** Connected server with downloading, seeding, paused, and finished torrents.
 - **Steps:**
   1. Observe the filter button in the navigation bar (`line.3.horizontal.decrease`) directly to the left of the `+` button.
-  2. Tap the filter button: verify a popover appears with `Reset Filters`, `Status`, `Tags` (if available), and `Trackers` (if available), with a reserved leading slot for checkmarks and trailing item counters.
-  3. Tap `Downloading`: verify a primary white checkmark appears in the leading slot and only torrents with status `.downloading` appear, while the popover remains open.
+  2. Tap the filter button: verify a popover appears with `Reset Filters`, `Status`, `Tags` (if available), and `Trackers` (if available), where each item displays its title and counter in parentheses flush-left (e.g. `Downloading (0)`, supporting up to 2 lines for long names), followed by a spacer and a dedicated 18pt trailing slot for checkmarks.
+  3. Tap `Downloading`: verify a primary checkmark appears on the trailing edge (right side) in the dedicated 18pt slot without shifting the title or counter, and only torrents with status `.downloading` appear while the popover remains open.
   4. Tap `Seeding`: verify both downloading and seeding torrents appear (multi-select OR logic).
   5. Tap `Reset Filters`: verify all filters clear, the filter popover is automatically dismissed, toolbar icon returns to default `line.3.horizontal.decrease`, and all torrents return.
 - **Expected Result:**
+  - Titles with counters in parentheses align flush with the left margin matching section headers (e.g. `Downloading (0)` without awkward blank leading space on unselected rows).
+  - Active filters display checkmarks on the trailing edge without shifting titles or counters horizontally.
   - When filters are active, toolbar icon is highlighted as `line.3.horizontal.decrease.circle.fill` in accent color.
   - Selections update instantaneously using local state without blocking network requests.
   - Tapping `Reset Filters` clears active filters and dismisses the popover.
@@ -713,18 +718,42 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
-## 10. Automated Screenshot Capture (`TC-SNP`)
+## 10. Automated Screenshots & App Store Connect Upload (`TC-SCR`)
 
-### `[TC-SNP-001]` Automated App Store Screenshot Sequence
-- **Type / Priority:** `Automated UI Test` / `Smoke`
-- **Preconditions:** App launched with `--uitesting-mock` launch argument.
+### `[TC-SCR-001]` Automated App Store Screenshot Capture
+- **Type / Priority:** `Smoke`
+- **Preconditions:**
+  - Xcode and Fastlane environment configured.
+  - Simulators configured on iOS 27.2: `iPhone 18 Pro Max` and `iPad Pro 13-inch (M5)`.
+  - App launched with `--uitesting-mock` launch argument via `LozaSnapshotUITests` under `LozaUITests` scheme.
 - **Steps:**
-  1. Launch app with `setupSnapshot(app)` and `--uitesting-mock`.
-  2. Wait for mock torrent list to load and capture `01_TorrentList`.
-  3. Tap `serverMenuButton`, tap `manageServersButton`, verify `closeButton` and capture `02_ServerList`.
-  4. Dismiss server management sheet via `closeButton`.
-  5. Tap `filterButton`, verify `filterPopover` exists and capture `03_TorrentFilter`.
-  6. Dismiss filter popover.
-  7. Tap `Alpine-standard-3.20.3-x86_64.iso`, verify `torrentDetailView` and capture `04_TorrentDetail`.
+  1. Run `fastlane screenshots` (or `bundle exec fastlane screenshots`).
+  2. Snapshot launches `LozaSnapshotUITests` with status bar override enabled (`override_status_bar(true)`).
+  3. UI test navigates and captures 4 sequential screenshots:
+     - `01_TorrentList`: Main torrent list populated with mock legal torrents.
+     - `02_ServerList`: Server Management sheet accessed via `serverMenuButton` -> `manageServersButton`.
+     - `03_TorrentFilter`: Filter and sorting options popover accessed via `filterButton`.
+     - `04_TorrentDetail`: Torrent detail view accessed by tapping `Alpine-standard-3.20.3-x86_64.iso`.
+  4. Snapshot executes the suite across 2 device configurations (`iPhone 18 Pro Max`, `iPad Pro 13-inch (M5)`) and 6 localized languages (`en-US`, `uk`, `de-DE`, `fr-FR`, `es-ES`, `pl`).
 - **Expected Result:**
-  - All 4 screenshots are saved into `screenshotsDirectory` without UI hierarchy errors or timeouts across all configured locales and devices.
+  - Fastlane snapshot captures exactly 4 screenshots per device per language (48 total PNG files) saved to `./fastlane/screenshots/`.
+  - Status bar displays clean 9:41 AM time, 100% battery, and full cellular/Wi-Fi signal bars across all captures.
+  - Screenshots render in light mode without UI clipping, missing localized strings, or hierarchy timeouts.
+
+---
+
+### `[TC-SCR-002]` App Store Connect Screenshot Upload Lane
+- **Type / Priority:** `Regression`
+- **Preconditions:**
+  - App Store Connect API Key configured via environment variables (`APP_STORE_CONNECT_API_KEY_KEY_ID`, `APP_STORE_CONNECT_API_KEY_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_KEY_FILEPATH` or `APP_STORE_CONNECT_API_KEY_KEY`) or `--api_key_path` option.
+  - Screenshots previously generated and stored in `./fastlane/screenshots/`.
+  - Target app configured in App Store Connect with bundle identifier `com.smnk.loza`.
+- **Steps:**
+  1. Execute `fastlane upload_screenshots` (or `bundle exec fastlane upload_screenshots`).
+  2. Fastlane validates App Store Connect API key authentication.
+  3. Deliver lane executes with `skip_binary_upload: true`, `skip_metadata: true`, `screenshots_path: "./fastlane/screenshots"`, and `overwrite_screenshots: true`.
+  4. Verify terminal output logs and App Store Connect dashboard for uploaded screenshot sets.
+- **Expected Result:**
+  - Screenshots are uploaded cleanly for each supported device display size (6.9" / 6.7" iPhone and 13" iPad) across all 6 localized languages (`en-US`, `uk`, `de-DE`, `fr-FR`, `es-ES`, `pl`).
+  - Existing screenshots in App Store Connect are replaced accurately without dimensions or color space rejection errors.
+  - Zero binary or metadata changes occur during the upload lane execution.
