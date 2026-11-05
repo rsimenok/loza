@@ -36,7 +36,7 @@ struct FilterPopoverView: View {
                 .padding(.vertical, 12)
             }
         }
-        .frame(minWidth: 240, maxWidth: 300, maxHeight: 380)
+        .frame(minWidth: 250, maxWidth: 320, maxHeight: 400)
     }
 
     // MARK: - Subviews
@@ -53,7 +53,7 @@ struct FilterPopoverView: View {
                     .frame(width: 18, alignment: .center)
 
                 Text("Reset Filters")
-                    .font(.subheadline)
+                    .font(.body)
 
                 Spacer()
             }
@@ -67,7 +67,7 @@ struct FilterPopoverView: View {
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Status")
-                .font(.caption2.weight(.semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
@@ -86,7 +86,7 @@ struct FilterPopoverView: View {
     private var tagsSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Tags")
-                .font(.caption2.weight(.semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
@@ -105,7 +105,7 @@ struct FilterPopoverView: View {
     private var trackersSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Trackers")
-                .font(.caption2.weight(.semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
@@ -143,14 +143,14 @@ struct FilterPopoverView: View {
                 .frame(width: 18, alignment: .center)
 
                 Text(title)
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Spacer()
 
                 Text("\(count)")
-                    .font(.caption.monospacedDigit())
+                    .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
             .contentShape(Rectangle())
