@@ -58,8 +58,12 @@ Carthage/Build/
 
 fastlane/report.xml
 fastlane/Preview.html
-fastlane/screenshots/**/*.png
+fastlane/screenshots/
 fastlane/test_output
+fastlane/.env
+fastlane/.env.*
+!fastlane/.env.example
+*.p8
 
 # macOS
 .DS_Store
@@ -67,3 +71,6 @@ fastlane/test_output
 # Documentation, specs & AI plans
 docs/
 .agents/
+
+# Local previews
+preview.html
