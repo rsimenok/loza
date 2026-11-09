@@ -150,6 +150,57 @@ public final class MockTransmissionClient: TransmissionClientProtocol, @unchecke
         ]
     }
 
+    /// Complete dataset of 10 legal open-source distributions aligned with App Store review guidelines and screenshots.
+    public static func appStoreDemoTorrents() -> [Torrent] {
+        var torrents = defaultSampleTorrents()
+        let extraLegalDistros: [(name: String, size: Int64, tags: [String])] = [
+            ("Alpine-standard-3.20.3-x86_64.iso", 215_000_000, ["Linux", "ISO"]),
+            ("Blender-4.2.2-macos-arm64.dmg", 350_000_000, ["Software"]),
+            ("Debian-12.7.0-amd64-netinst.iso", 650_000_000, ["Linux", "ISO"]),
+            ("FreeBSD-14.1-RELEASE-amd64-disc1.iso", 1_100_000_000, ["BSD", "ISO"]),
+            ("LinuxMint-22-cinnamon-64bit.iso", 2_800_000_000, ["Linux", "ISO"]),
+            ("openSUSE-Tumbleweed-DVD-x86_64.iso", 4_300_000_000, ["Linux", "ISO"])
+        ]
+        for (offset, item) in extraLegalDistros.enumerated() {
+            torrents.append(
+                Torrent(
+                    id: 100 + offset,
+                    name: item.name,
+                    status: .seed,
+                    rateDownload: 0,
+                    rateUpload: 450_000,
+                    percentDone: 1.0,
+                    totalSize: item.size,
+                    eta: -1,
+                    errorString: "",
+                    peersConnected: 12 + offset * 3,
+                    peersSendingToUs: 0,
+                    peersGettingFromUs: 8,
+                    uploadedEver: item.size * 3,
+                    downloadedEver: item.size,
+                    uploadRatio: 3.0,
+                    files: [
+                        TorrentFile(
+                            id: 0,
+                            name: item.name,
+                            bytesCompleted: item.size,
+                            length: item.size,
+                            wanted: true,
+                            priority: 0
+                        )
+                    ],
+                    hashString: "extra_hash_\(100 + offset)",
+                    addedDate: Date(timeIntervalSince1970: 1730000000),
+                    trackers: [
+                        TorrentTracker(id: 0, announce: "https://tracker.debian.org/announce", tier: 0)
+                    ],
+                    labels: item.tags
+                )
+            )
+        }
+        return torrents
+    }
+
     private func simulateDelay() async throws {
         if let error = shouldFailWithError {
             throw error

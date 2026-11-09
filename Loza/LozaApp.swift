@@ -27,32 +27,8 @@ struct LozaApp: App {
             let secondaryServer = ServerConfig(name: "Seedbox VPS", host: "10.0.0.5")
             try? repo.addServer(secondaryServer, password: nil)
 
-            var torrents = MockTransmissionClient.defaultSampleTorrents()
-            let extraLegalDistros = [
-                "Debian-12.7.0-amd64-netinst.iso",
-                "LinuxMint-22-cinnamon-64bit.iso",
-                "openSUSE-Tumbleweed-DVD-x86_64.iso",
-                "FreeBSD-14.1-RELEASE-amd64-disc1.iso",
-                "Alpine-standard-3.20.3-x86_64.iso",
-                "Blender-4.2.2-macos-arm64.dmg"
-            ]
-            for (offset, distro) in extraLegalDistros.enumerated() {
-                torrents.append(
-                    Torrent(
-                        id: 100 + offset,
-                        name: distro,
-                        status: .seed,
-                        rateDownload: 0,
-                        rateUpload: 0,
-                        percentDone: 1.0,
-                        totalSize: 2_500_000_000,
-                        uploadRatio: 3.4
-                    )
-                )
-            }
-
             let mockClient = MockTransmissionClient(
-                initialTorrents: torrents,
+                initialTorrents: MockTransmissionClient.appStoreDemoTorrents(),
                 simulatedDelayNanoseconds: 20_000_000
             )
             self._environment = State(wrappedValue: AppEnvironment(
