@@ -145,6 +145,22 @@ Welcome to the **Loza** Quality Assurance Test Cases Catalog. This document outl
 
 ---
 
+### `[TC-SRV-008]` Add Demo / Simulated Server Flow
+- **Type / Priority:** `Functional`
+- **Preconditions:** App running in Simulator or on device with no servers configured, or from Server Management sheet.
+- **Steps:**
+  1. From empty state or Server Management (`ServerListView`), tap "Add First Server" (or "Add Server").
+  2. Enter test server configuration: Name: `Home NAS`, Host: `192.168.1.100` (or `Seedbox VPS` / `10.0.0.5`).
+  3. (Optional) Tap "Test Connection" and verify connection succeeds with green checkmark indicator ("Connection Successful") and active torrent stats.
+  4. Tap the save checkmark in toolbar.
+- **Expected Result:**
+  - Server is saved and activated.
+  - Main torrent list immediately populates with the 10 sample legal open-source torrents (Alpine Linux, Ubuntu Desktop, Fedora Workstation, Arch Linux, LibreOffice, Blender, Debian, FreeBSD, Linux Mint, openSUSE).
+  - Aggregate speeds in the bottom toolbar reflect active demo downloading and uploading speeds.
+  - Interactive actions (pause, resume, swipe delete, open detail, add torrent) operate smoothly against the in-memory mock client.
+
+---
+
 ## 3. Torrent List & Toolbar Filters (`TC-LST`)
 
 ### `[TC-LST-001]` Initial List Fetch & Default Sorting

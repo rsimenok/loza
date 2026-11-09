@@ -38,22 +38,29 @@ platform :ios do
         key_filepath: options[:api_key_path] || ENV["APP_STORE_CONNECT_API_KEY_JSON_PATH"] || ENV["ASC_KEY_JSON_PATH"]
       )
     elsif options[:key_id] || ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"] || ENV["ASC_KEY_ID"]
+      key_id = options[:key_id] || ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"] || ENV["ASC_KEY_ID"]
       key_filepath = options[:key_filepath] || ENV["APP_STORE_CONNECT_API_KEY_KEY_FILEPATH"] || ENV["ASC_KEY_PATH"]
       if key_filepath && !File.exist?(key_filepath)
         candidates = [
           File.join("fastlane", key_filepath),
           File.join("fastlane", File.basename(key_filepath)),
-          File.basename(key_filepath)
-        ]
+          File.basename(key_filepath),
+          Dir["fastlane/AuthKey_#{key_id}.p8"].first,
+          Dir["AuthKey_#{key_id}.p8"].first,
+          Dir["fastlane/AuthKey_*.p8"].first,
+          Dir["AuthKey_*.p8"].first
+        ].compact
         found = candidates.find { |p| File.exist?(p) }
         key_filepath = found if found
       elsif key_filepath.nil? || key_filepath.empty?
         # Auto-discover .p8 file if placed in fastlane/ or project root
-        key_filepath = Dir["fastlane/AuthKey_*.p8"].first || Dir["AuthKey_*.p8"].first
+        key_filepath = Dir["fastlane/AuthKey_#{key_id}.p8"].first || Dir["AuthKey_#{key_id}.p8"].first || Dir["fastlane/AuthKey_*.p8"].first || Dir["AuthKey_*.p8"].first
       end
 
+      key_filepath = File.expand_path(key_filepath) if key_filepath && File.exist?(key_filepath)
+
       api_key = app_store_connect_api_key(
-        key_id: options[:key_id] || ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"] || ENV["ASC_KEY_ID"],
+        key_id: key_id,
         issuer_id: options[:issuer_id] || ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"] || ENV["ASC_ISSUER_ID"],
         key_filepath: key_filepath,
         key_content: options[:key_content] || ENV["APP_STORE_CONNECT_API_KEY_KEY"] || ENV["ASC_KEY_CONTENT"],
@@ -68,7 +75,8 @@ platform :ios do
       skip_binary_upload: true,
       skip_metadata: true,
       screenshots_path: "./fastlane/screenshots",
-      overwrite_screenshots: true
+      overwrite_screenshots: true,
+      run_precheck_before_submit: false
     }
     deliver_options[:api_key] = api_key if api_key
 
